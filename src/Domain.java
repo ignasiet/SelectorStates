@@ -15,7 +15,9 @@ public class Domain {
 	public Hashtable<String, ArrayList> constantes = new Hashtable<String, ArrayList>();
 	public Hashtable<String, Action> list_actions = new Hashtable<String, Action>();
 	public Hashtable<String, Integer> state = new Hashtable<String, Integer>();
+	public Hashtable<String, Integer> hidden_state = new Hashtable<String, Integer>();
 	public Hashtable<String, Integer> predicates_count = new Hashtable<String, Integer>();
+	public Hashtable<String, Integer> predicates_invariants = new Hashtable<String, Integer>();
 	public ArrayList<String> goalState = new ArrayList<String>();
 	public String ProblemInstance;
 		
@@ -28,7 +30,7 @@ public class Domain {
 	}
 	
 	public void addActions(Action a){
-		list_actions.put(a.Name, a);
+		//list_actions.put(a.Name, a);
 		action_list.add(a);
 	}
 	
@@ -75,6 +77,39 @@ public class Domain {
 		}
 	}
 	
+	public void getInvariantPredicates(){
+		Hashtable<String, Integer> predicates_variants = new Hashtable<String, Integer>();
+		for(Action a : action_list){
+			for(String effect : a._effect){
+				if(effect.indexOf("?") > 0){
+					predicates_variants.put(effect.substring(0, effect.indexOf("?")), 1);
+				}else{
+					predicates_variants.put(effect, 1);
+				}
+			}
+		}
+		for(Action a : action_list){
+			for(String predicate : a._precond){
+				if(predicate.indexOf("?") > 0){
+					String aux = predicate.substring(0, predicate.indexOf("?"));
+					if(!predicates_variants.containsKey(aux)){
+						predicates_invariants.put(aux, 1);
+						System.out.println("Invariant: " + aux);
+					}
+				}else{
+					if(!predicates_variants.containsKey(predicate)){
+						predicates_invariants.put(predicate, 1);
+						System.out.println("Invariant: " + predicate);
+					}
+				}
+			}
+		}
+	}
+	
+	private boolean isValidCombination(String combination){
+		return true;
+	}
+	
 	public void ground_actions(Action action){
 		ArrayList<String> result = new ArrayList<String>();
 		//Hashtable<String, String> substitution = new Hashtable<String, String>();
@@ -85,6 +120,7 @@ public class Domain {
 			result = product(constantes.get(action.parameters_type.get(parameter)), result);
 		}
 		for(String combination : result){
+			boolean validAction = true;
 			Action act_grounded = new Action();
 			act_grounded.Name = action.Name + "_" + combination.replace(";", "_");
 			ArrayList<String> lista_objetos = new ArrayList<String>(Arrays.asList(combination.split(";")));
@@ -115,7 +151,9 @@ public class Domain {
 			}
 			act_grounded._effect = lista_efeitos;				
 			act_grounded._precond = lista_precond;
-			list_actions.put(act_grounded.Name, act_grounded);
+			if(validAction){
+				list_actions.put(act_grounded.Name, act_grounded);
+			}
 		}
 	}
 	
@@ -130,13 +168,28 @@ public class Domain {
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(initial_state);
 	    while(m.find()) {
 	    	String auxString = Planner.cleanString(m.group(1));
+	    	if(!predicates_count.containsKey(auxString)){
+	    		predicates_count.put(auxString, 1);
+	    		predicates_grounded.add(auxString);
+	    	}
 	    	state.put(auxString, 1);
+	    }
+	}
+	
+	public void addHiddenState(String initial_state){
+		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(initial_state);
+	    while(m.find()) {
+	    	String auxString = Planner.cleanString(m.group(1));
+	    	hidden_state.put(auxString, 1);
 	    }
 	}
 
 	public boolean applyAction(String action_name){
+		if(!list_actions.containsKey(action_name.toLowerCase())){
+			System.out.println("Error: action " + action_name + " not found.");
+		}
 		Action a = list_actions.get(action_name.toLowerCase());
-		if(isActionApplicable(a)){
+		if(isActionApplicable(a) && isActionReallyApplicable(a)){
 			applyEffects(a);
 			return true;
 		}
@@ -148,7 +201,7 @@ public class Domain {
 	private void applyEffects(Action a) {
 		for(String effect : a._effect){
 			if(effect.startsWith("~")){
-				effect = effect.replace("~_", "");
+				effect = effect.replace("~", "");
 				state.remove(effect);
 			}
 			else{
@@ -156,15 +209,49 @@ public class Domain {
 			}
 		}
 	}
-
+	
+	/**Verify if the action is applicable*/
 	private boolean isActionApplicable(Action a){
 		for(String precondition : a._precond){
-			if(!state.containsKey(precondition)){
-				System.out.println("Action not applicable: " + a.Name);
-				System.out.println("Precondition " + precondition + " not found.");
-				return false;
+			if(precondition.startsWith("~")){
+				if(state.containsKey(precondition.substring(1))){
+					System.out.println("Action not applicable: " + a.Name);
+					System.out.println("Precondition negated" + precondition + " not found.");
+					System.out.println("Found negated " + precondition.substring(1) + " precondition.");
+					return false;
+				}
 			}
+			else{
+				if(!state.containsKey(precondition)){
+					System.out.println("Action not applicable: " + a.Name);
+					System.out.println("Precondition " + precondition + " not found.");
+					return false;
+				}
+			}			
 		}
 		return true;
 	}
+	
+	/**Verify in the hidden world if the action is applicable*/
+	private boolean isActionReallyApplicable(Action a){
+		for(String precondition : a._precond){
+			if(precondition.startsWith("~")){
+				if(hidden_state.containsKey(precondition.substring(1))){
+					System.out.println("Action failed in real world: " + a.Name);
+					System.out.println("Precondition negated" + precondition + " not found.");
+					System.out.println("Found negated " + precondition.substring(1) + " precondition.");
+					return false;
+				}
+			}
+			else{
+				if(!hidden_state.containsKey(precondition)){
+					System.out.println("Action not applicable: " + a.Name);
+					System.out.println("Precondition " + precondition + " not found.");
+					return false;
+				}
+			}			
+		}
+		return true;
+	}
+	
 }

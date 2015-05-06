@@ -21,7 +21,7 @@ public class Printer {
 	private static void printDomainFile(){
 		try {
 			// Print problem as an XML File
-			String path = "Cdomain.pddl";
+			String path = "/home/ignasi/Dropbox/USP/Replanner/Cdomain.pddl";
 			File file = new File("Cdomain.pddl");
 			// if file doesnt exists, then create it
 			if (!file.exists()) {
@@ -41,7 +41,7 @@ public class Printer {
 	private static void printProblemFile(){
 		try {
 			// Print problem as an XML File
-			String path = "Cproblem.pddl";
+			String path = "/home/ignasi/Dropbox/USP/Replanner/Cproblem.pddl";
 			File file = new File("Cproblem.pddl");
 			// if file doesnt exists, then create it
 			if (!file.exists()) {
@@ -67,20 +67,53 @@ public class Printer {
 		return auxStr;
 	}
 	
+	private static String negateString(String pred){
+		String auxStr = "";
+		if(pred.startsWith("~")){
+			auxStr = auxStr + "(not (" + pred.replace("~", "") + ")) ";
+		}
+		else{
+			auxStr = auxStr + "(" + pred + ") ";
+		}
+		return auxStr;
+	}
+	
 	private static String printActions() {
 		String auxStr = "";
-		for(Action action : domain.action_list){
-			auxStr = auxStr + "(:action " + action.Name;
-			auxStr = auxStr + "\n:precondition (";
+		Enumeration e = domain.list_actions.keys();
+		while(e.hasMoreElements()){
+			Action action = domain.list_actions.get(e.nextElement().toString());
+			auxStr = auxStr + "\n(:action " + action.Name;
+			auxStr = auxStr + "\n:precondition ";
 			if(action._precond.size()>1){
-				auxStr = auxStr + "and ";
+				auxStr = auxStr + "(and ";
+				for(String precond : action._precond){
+					auxStr = auxStr + negateString(precond);
+				}
+				auxStr = auxStr + ")\n";
 			}
-			for(String precond : action._precond){				
-				auxStr = auxStr + "(" + precond + ")";
+			else{
+				for(String precond : action._precond){				
+					auxStr = auxStr + negateString(precond);
+				}
+				auxStr = auxStr + "\n";
+			}
+			auxStr = auxStr + ":effect ";
+			if(action._effect.size()>1){
+				auxStr = auxStr + "(and ";
+				for(String effect : action._effect){
+					auxStr = auxStr + negateString(effect);
+				}
+				auxStr = auxStr + ")\n";
+			}
+			else{
+				for(String effect : action._effect){
+					auxStr = auxStr + negateString(effect);
+				}
+				auxStr = auxStr + "\n";
 			}
 			auxStr = auxStr + ")\n";
 		}
-		auxStr = auxStr + ")\n";
 		return auxStr;
 	}
 
@@ -101,12 +134,29 @@ public class Printer {
 		String auxStr = "";
 		auxStr = "(define (problem " + domain.ProblemInstance + ")\n";
 		auxStr = auxStr + "(:domain " + domain.Name + ")\n";
-		//auxStr = auxStr + printInitSituation();
+		auxStr = auxStr + printInitSituation();
 		auxStr = auxStr + printGoalSituation();
 		auxStr = auxStr + "\n)\n";
 		return auxStr;
 	}
 	
+	private static String printInitSituation() {
+		String auxStr = "";
+		Enumeration e = domain.state.keys();
+		auxStr = auxStr + "(:init \n";
+		while(e.hasMoreElements()){
+			String pred = e.nextElement().toString();
+			if(pred.startsWith("~")){
+				auxStr = auxStr + "\t(not (" + pred.replace("~", "") + "))\n ";
+			}
+			else{
+				auxStr = auxStr + "\t(" + pred + ")\n";
+			}			
+		}
+		auxStr = auxStr + ") \n";
+		return auxStr;
+	}
+
 	private static String printGoalSituation() {
 		String auxStr = "\n(:goal (and ";
 		for(String pred : domain.goalState){
