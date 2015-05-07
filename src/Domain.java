@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 public class Domain {
 	
 	public String Name;
+	public String wumpus;
 	public ArrayList<Action> action_list = new ArrayList<Action>();
 	public ArrayList<String> predicates = new ArrayList<String>();
 	public ArrayList<String> predicates_grounded = new ArrayList<String>();
@@ -171,6 +172,10 @@ public class Domain {
 	    	if(!predicates_count.containsKey(auxString)){
 	    		predicates_count.put(auxString, 1);
 	    		predicates_grounded.add(auxString);
+	    		if(auxString.contains("wumpus")){
+	    			wumpus = auxString;
+	    			System.out.println("Wumpus escolhido em: " + auxString);
+	    		}
 	    	}
 	    	state.put(auxString, 1);
 	    }
@@ -194,10 +199,23 @@ public class Domain {
 			return true;
 		}
 		else{
+			getInfosBeforeReplanning(a);
 			return false;
 		}
 	}
 	
+	private void getInfosBeforeReplanning(Action a) {
+		for(String precond : a._precond){
+			if(precond.startsWith("~")){
+				precond = precond.replace("~", "");
+				state.remove(precond);
+			}
+			else{
+				state.put("~" + precond, 1);
+			}
+		}	
+	}
+
 	private void applyEffects(Action a) {
 		for(String effect : a._effect){
 			if(effect.startsWith("~")){

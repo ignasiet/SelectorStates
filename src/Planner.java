@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,16 +16,20 @@ public class Planner {
 	public static ArrayList<String> plan = new ArrayList<String>();
 	
 	public static void startPlanner(){
-		//String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\pW2.pddl";
-		//String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
-		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
+		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
+		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
+		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
+		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";
+		/*String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
 		String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
 		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/";
-		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
+		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";*/
+		boolean success = false;
 		init();
 		domain.ground_all_actions();
 		System.out.println("Done grounding.");
-		parseInit(path + "pW1.pddl");
+		String problem = "pW" + randInt(1, 7) + ".pddl";
+		parseInit(path + problem);
 		parseHidden(path + "hidden.pddl");
 		System.out.println("Done parsing initial state.");
 		domain.getInvariantPredicates();
@@ -32,13 +37,30 @@ public class Planner {
 		Printer.Printer(domain);
 		createPlan(path_planner, path_problem);
 		loadPlan(path_Plan);
-		if(!testPlan()){
-			System.out.println("Need to replan!");
-			System.out.println("Printing");
-			Printer.Printer(domain);
-		}else{
-			System.out.println("Success!!!!");
+		while(!success){
+			if(!testPlan()){
+				System.out.println("Need to replan!");
+				System.out.println("Printing");
+				Printer.Printer(domain);
+				createPlan(path_planner, path_problem);
+				plan.clear();
+				loadPlan(path_Plan);
+			}else{
+				success = true;
+				System.out.println("Success!!!!");
+			}
 		}
+	}
+	
+	public static int randInt(int min, int max) {
+
+	    // NOTE: Usually this should be a field rather than a method
+	    // variable so that it is not re-seeded every call.
+	    Random rand = new Random();
+	    // nextInt is normally exclusive of the top value,
+	    // so add 1 to make it inclusive
+	    int randomNum = rand.nextInt((max - min) + 1) + min;
+	    return randomNum;
 	}
 	
 	@SuppressWarnings("unused")
