@@ -14,46 +14,67 @@ import java.util.regex.Pattern;
 public class Planner {
 	public static Domain domain = new Domain();
 	public static ArrayList<String> plan = new ArrayList<String>();
+	public static int num_replans = 0;
+	public static int actions_executed = 0;
+	public static int actions_left = 0;
 	
 	public static void startPlanner(){
-		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
-		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
-		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
-		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";
-		/*String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
+		
+//		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
+//		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
+//		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
+//		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";
+		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
 		String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
 		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/";
-		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";*/
+		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
 		boolean success = false;
 		init();
 		domain.ground_all_actions();
-		System.out.println("Done grounding.");
-		String problem = "pW" + randInt(1, 7) + ".pddl";
-		parseInit(path + problem);
-		parseHidden(path + "hidden.pddl");
-		System.out.println("Done parsing initial state.");
+		//System.out.println("Done grounding.");
+		//String problem = "pW" + randInt(1, 7) + ".pddl";
+		String problem = "pW7.pddl";		
 		domain.getInvariantPredicates();
 		System.out.println("Printing");
 		Printer.Printer(domain);
-		createPlan(path_planner, path_problem);
-		loadPlan(path_Plan);
-		while(!success){
-			if(!testPlan()){
-				System.out.println("Need to replan!");
-				System.out.println("Printing");
-				Printer.Printer(domain);
-				createPlan(path_planner, path_problem);
-				plan.clear();
-				loadPlan(path_Plan);
-			}else{
-				success = true;
-				System.out.println("Success!!!!");
+		for(int i = 1;i < 2;i++){
+			parseInit(path + problem);
+			//String hidden = "hidden1.pddl";
+			//System.out.println("Done parsing initial state.");
+			String hidden = "hidden" + i + ".pddl";
+			System.out.println("Problem real: " + hidden);
+			parseHidden(path + hidden);
+			Printer.Printer(domain);
+			createPlan(path_planner, path_problem);
+			plan.clear();
+			loadPlan(path_Plan);
+			while(!success){
+				if(!testPlan()){
+					//System.out.println("Need to replan!");
+					//System.out.println("Printing");
+					System.out.println("FAIL! -> Replanning");
+					System.out.println("Number of actions executed: " + actions_executed);
+					System.out.println("Number of actions left: " + actions_left);
+					Printer.Printer(domain);
+					createPlan(path_planner, path_problem);
+					num_replans++;
+					plan.clear();
+					loadPlan(path_Plan);
+				}else{
+					success = true;
+					System.out.println("Success!!!!");
+					System.out.println("Number of replans: " + num_replans);
+					System.out.println("Number of actions executed: " + actions_executed);
+					System.out.println("Number of actions left: " + actions_left);
+				}
 			}
-		}
+			//Restart!
+			success = false;
+			actions_executed = 0;
+		}		
 	}
 	
 	public static int randInt(int min, int max) {
-
 	    // NOTE: Usually this should be a field rather than a method
 	    // variable so that it is not re-seeded every call.
 	    Random rand = new Random();
@@ -68,21 +89,30 @@ public class Planner {
 		//Call planner: must have FF-planner (see config)
 		Process proc;
 		try {
-			String exec_string = path + "ff -o " + problems + "Cdomain.pddl -f " + problems + "Cproblem.pddl";
+			String exec_string = path + "ff -o Cdomain.pddl -f Cproblem.pddl";
 			proc = Runtime.getRuntime().exec(exec_string);
+			try {
+			    proc.waitFor();
+			    System.out.println("FF finished");//this will only be seen after +- 10 seconds and process has finished
+
+			} catch (InterruptedException ex) {
+			   ex.printStackTrace(); 
+			}
 			//Then retrieve the process output
 			InputStream in = proc.getInputStream();
 			InputStream err = proc.getErrorStream();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
 	private static boolean testPlan(){
+		actions_left = plan.size();
 		for(String action : plan){
 			if(domain.applyAction(action)){
-				System.out.println("Action : " + action + " is possible");
+				actions_executed++;
+				actions_left--;
+				//System.out.println("Action : " + action + " is possible");
 			}else{
 				System.out.println("Action error.");
 				return false;
@@ -96,11 +126,10 @@ public class Planner {
 			path = "plan.txt";
 			BufferedReader in = new BufferedReader(new FileReader(path));
 			String line;
-			System.out.println("Loading plan...");
+			//System.out.println("Loading plan...");
 			while (in.ready()) {
 				line = in.readLine();
 				plan.add(line);
-				System.out.println("Action loaded: " + line);
 			}
 			in.close();
 		} catch (FileNotFoundException e) {
@@ -222,11 +251,13 @@ public class Planner {
 			    	}else{
 			    		if(aux.startsWith("~")){
 			    			a.Name = "deduct-not-" + aux.substring(1);
+			    			a._Negative_effects.add(aux.substring(1));
 			    		}
 			    		else{
 			    			a.Name = "deduct-" + aux;
+			    			a._Positive_effects.add(aux);
 			    		}
-			    		a._effect.add(aux);
+			    		
 			    	}
 			    	if(!domain.predicates_count.containsKey(aux.trim())){
 						domain.predicates_grounded.add(aux.trim());
@@ -265,11 +296,12 @@ public class Planner {
 			    	}else{
 			    		if(aux.startsWith("~")){
 			    			a.Name = "deduct-not-wumpus-" + aux.substring(1);
+			    			a._Negative_effects.add(aux.substring(1));
 			    		}
 			    		else{
-			    			a.Name = "deduct-wumpus-" + aux;
+			    			a.Name = "deduct-" + aux;
+			    			a._Positive_effects.add(aux);
 			    		}
-			    		a._effect.add(aux);
 			    	}
 			    }
 			    domain.list_actions.put(a.Name, a);
@@ -293,10 +325,10 @@ public class Planner {
 			    	String aux = Planner.cleanString(m.group(1));
 			    	if(aux.startsWith("~")){
 			    		aux = aux.substring(1);
-			    		a._precond.add(aux);
+			    		a._Negative_effects.add(aux);
 			    	}
 			    	else{
-			    		a._effect.add(aux);
+			    		a._Positive_effects.add(aux);
 			    		a.Name = "deduct-presence-" + aux;
 			    	}
 			    }
@@ -321,10 +353,10 @@ public class Planner {
 			    	String aux = Planner.cleanString(m.group(1));
 			    	if(aux.startsWith("~")){
 			    		aux = aux.substring(1);
-			    		a._precond.add(aux);
+			    		a._Negative_effects.add(aux);
 			    	}
 			    	else{
-			    		a._effect.add(aux);
+			    		a._Positive_effects.add(aux);
 			    		a.Name = "deduct-presence-" + aux;
 			    	}
 			    }

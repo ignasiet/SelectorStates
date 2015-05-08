@@ -13,7 +13,8 @@ public class Action {
 	public Hashtable<String, String> parameters_type = new Hashtable<String, String>();
 	public ArrayList<String> _parameters = new ArrayList<String>();
 	public ArrayList<String> _precond = new ArrayList<String>();
-	public ArrayList<String> _effect = new ArrayList<String>();
+	public ArrayList<String> _Positive_effects = new ArrayList<String>();
+	public ArrayList<String> _Negative_effects = new ArrayList<String>();
 	public String Name = ""; 
 	
 	public Action(){
@@ -56,8 +57,13 @@ public class Action {
 	
 	public void parseEffects(String effect_List){
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(effect_List);
-	    while(m.find()) {	    	
-	    	_effect.add(Planner.cleanString(m.group(1)));
+	    while(m.find()) {
+	    	String effect = Planner.cleanString(m.group(1));
+	    	if(effect.startsWith("~")){
+	    		_Negative_effects.add(effect);
+	    	}else{
+	    		_Positive_effects.add(effect);
+	    	}	    	
 	    }
 	}
 }
