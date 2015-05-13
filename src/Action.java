@@ -7,18 +7,16 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-public class Action {
+public class Action extends AbstractAction{
 	public Hashtable<String, ArrayList<String>> action_parameters = new Hashtable<String, ArrayList<String>>();
 	public Hashtable<String, String> parameters_type = new Hashtable<String, String>();
 	public ArrayList<String> _parameters = new ArrayList<String>();
-	public ArrayList<String> _precond = new ArrayList<String>();
-	public ArrayList<String> _Positive_effects = new ArrayList<String>();
-	public ArrayList<String> _Negative_effects = new ArrayList<String>();
-	public String Name = ""; 
-	
+
 	public Action(){
-		
+		_precond = new ArrayList<String>();
+		_Positive_effects = new ArrayList<String>();
+		_Negative_effects = new ArrayList<String>();
+		IsObservation = false;
 	}
 	
 	public void parseParameters(String parametersList){

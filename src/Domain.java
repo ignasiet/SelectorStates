@@ -14,7 +14,7 @@ public class Domain {
 	public ArrayList<String> predicates = new ArrayList<String>();
 	public ArrayList<String> predicates_grounded = new ArrayList<String>();
 	public Hashtable<String, ArrayList> constantes = new Hashtable<String, ArrayList>();
-	public Hashtable<String, Action> list_actions = new Hashtable<String, Action>();
+	public Hashtable<String, AbstractAction> list_actions = new Hashtable<String, AbstractAction>();
 	public Hashtable<String, Integer> state = new Hashtable<String, Integer>();
 	public Hashtable<String, Integer> hidden_state = new Hashtable<String, Integer>();
 	public Hashtable<String, Integer> predicates_count = new Hashtable<String, Integer>();
@@ -79,32 +79,80 @@ public class Domain {
 	}
 	
 	public void getInvariantPredicates(){
-//		Hashtable<String, Integer> predicates_variants = new Hashtable<String, Integer>();
-//		for(Action a : action_list){
-//			for(String effect : a._effect){
-//				if(effect.indexOf("?") > 0){
-//					predicates_variants.put(effect.substring(0, effect.indexOf("?")), 1);
-//				}else{
-//					predicates_variants.put(effect, 1);
-//				}
-//			}
-//		}
-//		for(Action a : action_list){
-//			for(String predicate : a._precond){
-//				if(predicate.indexOf("?") > 0){
-//					String aux = predicate.substring(0, predicate.indexOf("?"));
-//					if(!predicates_variants.containsKey(aux)){
-//						predicates_invariants.put(aux, 1);
-//						//System.out.println("Invariant: " + aux);
-//					}
-//				}else{
-//					if(!predicates_variants.containsKey(predicate)){
-//						predicates_invariants.put(predicate, 1);
-//						//System.out.println("Invariant: " + predicate);
-//					}
-//				}
-//			}
-//		}
+		Hashtable<String, Integer> predicates_variants = new Hashtable<String, Integer>();
+		Enumeration e = list_actions.keys();
+		while(e.hasMoreElements()){
+			AbstractAction a = list_actions.get(e.nextElement().toString());
+			if(!a.IsObservation){
+				for(String effect : a._Positive_effects){
+					/*if(effect.indexOf("?") > 0){
+						predicates_variants.put(effect.substring(0, effect.indexOf("?")), 1);
+					}else{
+						predicates_variants.put(effect, 1);
+					}
+				}
+				for(String effect : a._Negative_effects){
+					if(effect.indexOf("?") > 0){
+						predicates_variants.put(effect.substring(0, effect.indexOf("?")), 1);
+					}else{
+						predicates_variants.put(effect, 1);
+					}*/
+					if(effect.contains("_")){
+						predicates_variants.put(effect.substring(0, effect.indexOf("_")), 1);
+					}else{
+						predicates_variants.put(effect, 1);
+					}
+				}
+			}
+		}
+		for(Action a : action_list){
+			for(String predicate : a._precond){
+				/*if(predicate.indexOf("?") > 0){
+					String aux = predicate.substring(0, predicate.indexOf("?"));
+					if(!predicates_variants.containsKey(aux)){
+						predicates_invariants.put(aux, 1);
+						//System.out.println("Invariant: " + aux);
+					}
+				}else{
+					if(!predicates_variants.containsKey(predicate)){
+						predicates_invariants.put(predicate, 1);
+						//System.out.println("Invariant: " + predicate);
+					}
+				}*/
+				String auxPredicate = predicate;
+				if(predicate.contains("_")){
+					auxPredicate = predicate.substring(0, predicate.indexOf("_"));
+				}
+				if(!predicates_variants.containsKey(auxPredicate)){
+					predicates_invariants.put(auxPredicate, 1);
+				}
+			}
+		}
+	}
+	
+	public void eliminateInvalidActions(){
+		Enumeration e = list_actions.keys();
+		ArrayList<String> actions_to_be_removed = new ArrayList<String>();
+		while(e.hasMoreElements()){
+			String action_name = e.nextElement().toString();
+			AbstractAction a = list_actions.get(action_name);
+			for(String precond : a._precond){
+				String predicate_name = precond;
+				if(precond.contains("_")){
+					predicate_name = precond.substring(0, precond.indexOf("_"));
+				}
+				if(predicates_invariants.containsKey(predicate_name)){
+					//Verificar si acontece no estado inicial
+					if(!state.containsKey(precond)){
+						actions_to_be_removed.add(action_name);
+						break;
+					}
+				}
+			}
+		}
+		for(String deleteAction : actions_to_be_removed){
+			list_actions.remove(deleteAction);
+		}
 	}
 	
 	private boolean isValidCombination(String combination){
@@ -204,7 +252,7 @@ public class Domain {
 		if(!list_actions.containsKey(action_name.toLowerCase())){
 			//System.out.println("Error: action " + action_name + " not found.");
 		}
-		Action a = list_actions.get(action_name.toLowerCase());
+		AbstractAction a = list_actions.get(action_name.toLowerCase());
 		if(isActionApplicable(a) && isActionReallyApplicable(a)){
 			applyEffects(a);
 			return true;
@@ -215,7 +263,7 @@ public class Domain {
 		}
 	}
 	
-	private void getInfosBeforeReplanning(Action a) {
+	private void getInfosBeforeReplanning(AbstractAction a) {
 		for(String precond : a._precond){
 			if(precond.startsWith("~")){
 				precond = precond.replace("~", "");
@@ -227,7 +275,7 @@ public class Domain {
 		}	
 	}
 
-	private void applyEffects(Action a) {
+	private void applyEffects(AbstractAction a) {
 		for(String effect : a._Positive_effects){
 			state.put(effect, 1);
 			hidden_state.put(effect, 1);
@@ -240,7 +288,7 @@ public class Domain {
 	}
 	
 	/**Verify if the action is applicable*/
-	private boolean isActionApplicable(Action a){
+	private boolean isActionApplicable(AbstractAction a){
 		for(String precondition : a._precond){
 			if(precondition.startsWith("~")){
 				if(state.containsKey(precondition.substring(1))){
@@ -262,7 +310,7 @@ public class Domain {
 	}
 	
 	/**Verify in the hidden world if the action is applicable*/
-	private boolean isActionReallyApplicable(Action a){
+	private boolean isActionReallyApplicable(AbstractAction a){
 		for(String precondition : a._precond){
 			if(precondition.startsWith("~")){
 				if(hidden_state.containsKey(precondition.substring(1))){

@@ -82,7 +82,7 @@ public class Printer {
 		String auxStr = "";
 		Enumeration e = domain.list_actions.keys();
 		while(e.hasMoreElements()){
-			Action action = domain.list_actions.get(e.nextElement().toString());
+			AbstractAction action = domain.list_actions.get(e.nextElement().toString());
 			auxStr = auxStr + "\n(:action " + action.Name;
 			auxStr = auxStr + "\n:precondition ";
 			if(action._precond.size()>1){

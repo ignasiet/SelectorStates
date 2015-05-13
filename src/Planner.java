@@ -20,21 +20,20 @@ public class Planner {
 	
 	public static void startPlanner(){
 		
-//		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
-//		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
-//		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
-//		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";
-		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
+		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
+		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
+		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
+		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";
+/*		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
 		String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
 		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/";
-		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
+		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";*/
 		boolean success = false;
 		init();
 		domain.ground_all_actions();
 		//System.out.println("Done grounding.");
 		//String problem = "pW" + randInt(1, 7) + ".pddl";
-		String problem = "pW7.pddl";		
-		domain.getInvariantPredicates();
+		String problem = "pW1.pddl";
 		System.out.println("Printing");
 		Printer.Printer(domain);
 		for(int i = 1;i < 2;i++){
@@ -44,8 +43,14 @@ public class Planner {
 			String hidden = "hidden" + i + ".pddl";
 			System.out.println("Problem real: " + hidden);
 			parseHidden(path + hidden);
-			Printer.Printer(domain);
-			createPlan(path_planner, path_problem);
+			//Printer.Printer(domain);
+			
+			domain.getInvariantPredicates();
+			domain.eliminateInvalidActions();
+			Searcher aStar = new Searcher();
+			aStar.searchPlan(domain);
+			
+			/*createPlan(path_planner, path_problem);
 			plan.clear();
 			loadPlan(path_Plan);
 			while(!success){
@@ -70,8 +75,8 @@ public class Planner {
 			}
 			//Restart!
 			success = false;
-			actions_executed = 0;
-		}		
+			actions_executed = 0;*/
+		}
 	}
 	
 	public static int randInt(int min, int max) {
@@ -154,23 +159,25 @@ public class Planner {
 		a.parseEffects("(not (at ?i)) (at ?j)");
 		domain.addActions(a);
 		
-		/*Action Move*/
+		/*Action smell*/
 		Action b = new Action();
 		b.Name = "smell_wumpus";
 		b.parseParameters("?pos - pos");
 		b.parsePreconditions("(alive) (at ?pos)");
 		b.parseEffects("(stench ?pos)");
+		b.IsObservation = true;
 		domain.addActions(b);
 		
-		/*Action Move*/
+		/*Action feel*/
 		Action c = new Action();
 		c.Name = "feel-breeze";
 		c.parseParameters("?pos - pos");
 		c.parsePreconditions("(alive) (at ?pos)");
 		c.parseEffects("(breeze ?pos)");
+		c.IsObservation = true;
 		domain.addActions(c);
 		
-		/*Action Move*/
+		/*Action grab*/
 		Action d = new Action();
 		d.Name = "grab";
 		d.parseParameters("?i - pos");
@@ -325,7 +332,7 @@ public class Planner {
 			    	String aux = Planner.cleanString(m.group(1));
 			    	if(aux.startsWith("~")){
 			    		aux = aux.substring(1);
-			    		a._Negative_effects.add(aux);
+			    		a._precond.add(aux);
 			    	}
 			    	else{
 			    		a._Positive_effects.add(aux);
