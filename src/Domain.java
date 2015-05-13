@@ -13,12 +13,14 @@ public class Domain {
 	public ArrayList<Action> action_list = new ArrayList<Action>();
 	public ArrayList<String> predicates = new ArrayList<String>();
 	public ArrayList<String> predicates_grounded = new ArrayList<String>();
+	public ArrayList<String> predicates_uncertain = new ArrayList<String>();
 	public Hashtable<String, ArrayList> constantes = new Hashtable<String, ArrayList>();
 	public Hashtable<String, AbstractAction> list_actions = new Hashtable<String, AbstractAction>();
 	public Hashtable<String, Integer> state = new Hashtable<String, Integer>();
 	public Hashtable<String, Integer> hidden_state = new Hashtable<String, Integer>();
 	public Hashtable<String, Integer> predicates_count = new Hashtable<String, Integer>();
 	public Hashtable<String, Integer> predicates_invariants = new Hashtable<String, Integer>();
+	public Hashtable<String, Integer> predicates_invariants_grounded = new Hashtable<String, Integer>();
 	public ArrayList<String> goalState = new ArrayList<String>();
 	public String ProblemInstance;
 		
@@ -142,6 +144,7 @@ public class Domain {
 					predicate_name = precond.substring(0, precond.indexOf("_"));
 				}
 				if(predicates_invariants.containsKey(predicate_name)){
+					predicates_invariants_grounded.put(precond, 1);
 					//Verificar si acontece no estado inicial
 					if(!state.containsKey(precond)){
 						actions_to_be_removed.add(action_name);
@@ -153,10 +156,6 @@ public class Domain {
 		for(String deleteAction : actions_to_be_removed){
 			list_actions.remove(deleteAction);
 		}
-	}
-	
-	private boolean isValidCombination(String combination){
-		return true;
 	}
 	
 	public void ground_actions(Action action){
@@ -171,6 +170,9 @@ public class Domain {
 		for(String combination : result){
 			boolean validAction = true;
 			Action act_grounded = new Action();
+			if(action.IsObservation){
+				act_grounded.IsObservation = true;
+			}
 			act_grounded.Name = action.Name + "_" + combination.replace(";", "_");
 			ArrayList<String> lista_objetos = new ArrayList<String>(Arrays.asList(combination.split(";")));
 			int i = 0;
@@ -225,6 +227,17 @@ public class Domain {
 	}
 	
 	public void addInitialState(String initial_state){
+		//TODO: extract oneof first
+		if(initial_state.contains("(oneof")){
+			int index_oneof = initial_state.indexOf("(oneof") + 6;
+			String oneof_string = initial_state.substring(index_oneof);
+			Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(oneof_string);
+		    while(m.find()) {
+		    	String aux = Planner.cleanString(m.group(1));
+		    	predicates_uncertain.add(aux);
+		    }
+		    initial_state = initial_state.substring(0, index_oneof);
+		}
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(initial_state);
 	    while(m.find()) {
 	    	String auxString = Planner.cleanString(m.group(1));
