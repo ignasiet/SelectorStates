@@ -94,19 +94,19 @@ public class Translator {
 				domain_translated.list_actions.put(a_translated.Name, a_translated);
 			}else{
 				Action a_translated = new Action();
-				a_translated.IsObservation = true;
+				a_translated.IsObservation = false;
 				a_translated.Name = a.Name;
 				for(String precondition : a._precond){
 					a_translated._precond.add("K" + precondition);
 				}
 				for(String positive_effect : a._Positive_effects){
 					a_translated._Positive_effects.add("K" + positive_effect);
-					a_translated._Negative_effects.add("~K" + positive_effect);
 				}
 				for(String negat_effect : a._Negative_effects){
 					if(negat_effect.startsWith("~")){
 						negat_effect = negat_effect.substring(1);
 					}
+					a_translated._Negative_effects.add("~K" + negat_effect);
 					a_translated._Positive_effects.add("K~" + negat_effect);
 				}
 				domain_translated.list_actions.put(a_translated.Name, a_translated);
