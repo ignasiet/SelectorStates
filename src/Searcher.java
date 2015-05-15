@@ -109,7 +109,10 @@ public class Searcher {
 							Actions_in_fringe.remove(action.Name);
 						}
 					}
-				}				
+					else{
+						System.out.println("Invalid Actions: " + action.Name);
+					}
+				}
 			}
 		}
 		if(fringe.isEmpty()){

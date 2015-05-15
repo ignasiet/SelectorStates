@@ -33,7 +33,7 @@ public class Planner {
 		domain.ground_all_actions();
 		//System.out.println("Done grounding.");
 		//String problem = "pW" + randInt(1, 7) + ".pddl";
-		String problem = "pW1sp.pddl";
+		String problem = "pW1.pddl";
 		System.out.println("Printing");
 		Printer.Printer(domain);
 		for(int i = 1;i < 2;i++){
