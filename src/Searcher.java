@@ -1,8 +1,10 @@
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Comparator;
+import java.util.Queue;
 
 /**
  * @author Ignasi
@@ -14,13 +16,15 @@ public class Searcher {
 	//private PriorityQueue<SearchNode> fringe;
 	private Domain domain_translated;
 	private Hashtable<Hashtable<String, Integer>, Integer> _VisitedNodes = new Hashtable<Hashtable<String, Integer>, Integer>();
+	private Hashtable<String, Integer> Actions_in_fringe = new Hashtable<String, Integer>();
 	private Integer _GeneratedNodes = 0;
 	private Integer i = 0;
 	private ArrayList<Tupla> tupla_Solutions = new ArrayList<Searcher.Tupla>();
 	private ArrayList<ArrayList<SearchNode>> solution_path = new ArrayList<ArrayList<SearchNode>>();
 	private ArrayList<SearchNode> solution_nodes = new ArrayList<SearchNode>();
 	private ArrayList<SearchNode> nodes_toReplan = new ArrayList<SearchNode>();
-	private boolean nodes_pending = false;
+	private ArrayList<SearchNode> nodes_pending = new ArrayList<SearchNode>();
+	//private boolean nodes_pending = false;
 	private boolean success = false;
 	private Hashtable<String, Integer> observations_made = new Hashtable<String, Integer>();
 	
@@ -28,7 +32,7 @@ public class Searcher {
 		
 	}
 	
-	private PriorityQueue<SearchNode> initFringe(){
+	private Queue<SearchNode> initFringe(){
 		//init Priority queue
 		PriorityQueue<SearchNode> fringe = new PriorityQueue<SearchNode>(nMax, 
 				new Comparator<SearchNode>(){
@@ -52,7 +56,7 @@ public class Searcher {
 			}*/
 			initialState.heuristicValue = gp.heuristicValue();
 			initialState.fCost = initialState.heuristicValue + initialState.pathCost;
-			PriorityQueue<SearchNode> fringe = initFringe();
+			Queue<SearchNode> fringe = initFringe();
 			initialState._ActionsApplied = new Hashtable<String, Integer>();
 			fringe.add(initialState);
 			searcherContingentPlan(fringe, domain);
@@ -62,23 +66,21 @@ public class Searcher {
 		}
 	}
 	
-	public void searcherContingentPlan(PriorityQueue<SearchNode> fringe, Domain domain){
-		//aStarSearch(fringe);
-		SearchNode initialState = fringe.poll();
-		recursiveBFS(domain, initialState, Integer.MAX_VALUE);
-		while(nodes_pending){
-			for(int counter_replan=0; counter_replan <nodes_toReplan.size();counter_replan++){
-				SearchNode node_r = nodes_toReplan.get(counter_replan);
-				fringe.clear();
-				fringe.add(node_r);
-				recursiveBFS(domain, fringe.poll(), Integer.MAX_VALUE);
-				//aStarSearch(fringe);
-			}
-			nodes_toReplan.clear();
+	public void searcherContingentPlan(Queue<SearchNode> fringe, Domain domain){
+		//SearchNode initialState = fringe.poll();
+		aStarSearch(fringe);
+		//recursiveBFS(domain, initialState, Integer.MAX_VALUE);
+		while(!nodes_toReplan.isEmpty()){
+			SearchNode node_r = nodes_toReplan.get(0);
+			nodes_toReplan.remove(0);
+			fringe.clear();
+			fringe.add(node_r);
+			//recursiveBFS(domain, fringe.poll(), Integer.MAX_VALUE);
+			aStarSearch(fringe);
 		}
 	}
 	
-	public void aStarSearch(PriorityQueue<SearchNode> fringe){
+	public void aStarSearch(Queue<SearchNode> fringe){
 		while(!fringe.isEmpty()){
 			//node <- selectFrom(fringe)
 			SearchNode node = fringe.poll();
@@ -94,11 +96,20 @@ public class Searcher {
 				break;
 			}
 			//Else expand node
-			for(AbstractAction action : matchApplicableActions(node)){
+			ArrayList<AbstractAction> applicable_action_list = matchApplicableActions(node);
+			for(AbstractAction action : applicable_action_list){
 				_GeneratedNodes++;
-				if(!action.IsObservation || !node._ActionsApplied.containsKey(action.Name)){
-					fringe.add(expand(node, action));
-				}
+				if(!Actions_in_fringe.containsKey(action.Name)){
+					Actions_in_fringe.put(action.Name, 1);
+					if(!(action.IsObservation && node._ActionsApplied.containsKey(action.Name))){
+						SearchNode node_created = expand(node, action);
+						if(!_VisitedNodes.containsKey(node_created.state)){
+							_GeneratedNodes++;
+							fringe.add(node_created);
+							Actions_in_fringe.remove(action.Name);
+						}
+					}
+				}				
 			}
 		}
 		if(fringe.isEmpty()){
@@ -118,11 +129,12 @@ public class Searcher {
 			return return_t;
 		}
 		//Fringe init
-		PriorityQueue<SearchNode> fringe = initFringe();
-		PriorityQueue<SearchNode> sucessor = initFringe();
+		Queue<SearchNode> fringe = initFringe();
+		Queue<SearchNode> sucessor = initFringe();
 		//Expand node
-		for(AbstractAction action : matchApplicableActions(node)){
-			if(!node._ActionsApplied.containsKey(action.Name)){
+		ArrayList<AbstractAction> applicable_action_list = matchApplicableActions(node);
+		for(AbstractAction action : applicable_action_list){
+			if(!(action.IsObservation && node._ActionsApplied.containsKey(action.Name))){
 				SearchNode node_created = expand(node, action);
 				if(!_VisitedNodes.containsKey(node_created.state)){
 					_GeneratedNodes++;
@@ -227,7 +239,6 @@ public class Searcher {
 				if(!observations_made.containsKey(node_plan.generatedBy.Name)){
 					observations_made.put(node_plan.generatedBy.Name, 1);
 					nodes_toReplan.addAll(node_plan.transformObservation(node_plan.generatedBy));
-					nodes_pending = true;
 				}
 			}
 			path.add(0, node_plan);
