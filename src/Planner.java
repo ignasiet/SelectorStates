@@ -20,14 +20,14 @@ public class Planner {
 	
 	public static void startPlanner(){
 		
-		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
+/*		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
 		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
 		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
-		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";
-/*		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
+		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";*/
+		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
 		String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
 		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/";
-		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";*/
+		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
 		boolean success = false;
 		init();
 		domain.ground_all_actions();
@@ -43,11 +43,11 @@ public class Planner {
 			String hidden = "hidden" + i + ".pddl";
 			System.out.println("Problem real: " + hidden);
 			parseHidden(path + hidden);
-			//Printer.Printer(domain);
 			
 			domain.getInvariantPredicates();
 			domain.eliminateInvalidActions();
 			Translator tr = new Translator(domain);
+			//Printer.Printer(tr.domain_translated);
 			Searcher aStar = new Searcher();
 			aStar.searchPlan(tr.domain_translated);
 			
@@ -300,15 +300,16 @@ public class Planner {
 			    		else{
 			    			aux = "~" + aux;
 			    		}
+			    		a.Name = "Not-" + aux.replace("~", "");
 			    		a._precond.add(aux);
 			    		isFirst = false;
 			    	}else{
 			    		if(aux.startsWith("~")){
-			    			a.Name = "deduct-not-wumpus-" + aux.substring(1);
+			    			//a.Name = "Stench-not-" + aux.substring(1);
 			    			a._Negative_effects.add(aux.substring(1));
 			    		}
 			    		else{
-			    			a.Name = "deduct-" + aux;
+			    			a.Name = "Stench-" + aux;
 			    			a._Positive_effects.add(aux);
 			    		}
 			    	}
@@ -338,7 +339,7 @@ public class Planner {
 			    	}
 			    	else{
 			    		a._Positive_effects.add(aux);
-			    		a.Name = "deduct-presence-" + aux;
+			    		a.Name = "deduct-stench-" + aux;
 			    	}
 			    }
 			    domain.list_actions.put(a.Name, a);

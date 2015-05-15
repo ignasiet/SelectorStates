@@ -16,7 +16,6 @@ public class Searcher {
 	//private PriorityQueue<SearchNode> fringe;
 	private Domain domain_translated;
 	private Hashtable<Hashtable<String, Integer>, Integer> _VisitedNodes = new Hashtable<Hashtable<String, Integer>, Integer>();
-	private Hashtable<String, Integer> Actions_in_fringe = new Hashtable<String, Integer>();
 	private Integer _GeneratedNodes = 0;
 	private Integer i = 0;
 	private ArrayList<Tupla> tupla_Solutions = new ArrayList<Searcher.Tupla>();
@@ -78,12 +77,19 @@ public class Searcher {
 			//recursiveBFS(domain, fringe.poll(), Integer.MAX_VALUE);
 			aStarSearch(fringe);
 		}
+		System.out.println("Number of solutions found: " + solution_nodes.size());
 	}
 	
 	public void aStarSearch(Queue<SearchNode> fringe){
+		Hashtable<String, Integer> Actions_in_fringe = new Hashtable<String, Integer>();
 		while(!fringe.isEmpty()){
+			//System.out.println("Fringe size: " + fringe.size());
 			//node <- selectFrom(fringe)
 			SearchNode node = fringe.poll();
+			if(node.generatedBy != null){
+				//System.out.println("Treating node: " + node.generatedBy.Name);
+			}
+			//
 			if(!_VisitedNodes.containsKey(node.state)){
 				_VisitedNodes.put(node.state, 1);
 			}else{
@@ -96,9 +102,10 @@ public class Searcher {
 				break;
 			}
 			//Else expand node
-			ArrayList<AbstractAction> applicable_action_list = matchApplicableActions(node);
+			ArrayList<AbstractAction> applicable_action_list = matchApplicableActions(node);			
 			for(AbstractAction action : applicable_action_list){
 				_GeneratedNodes++;
+				//not expand what it is in the fringe
 				if(!Actions_in_fringe.containsKey(action.Name)){
 					Actions_in_fringe.put(action.Name, 1);
 					if(!(action.IsObservation && node._ActionsApplied.containsKey(action.Name))){
@@ -110,7 +117,7 @@ public class Searcher {
 						}
 					}
 					else{
-						System.out.println("Invalid Actions: " + action.Name);
+						//System.out.println("Invalid Actions: " + action.Name);
 					}
 				}
 			}
@@ -241,7 +248,11 @@ public class Searcher {
 			if(node_plan.isObservationNode){
 				if(!observations_made.containsKey(node_plan.generatedBy.Name)){
 					observations_made.put(node_plan.generatedBy.Name, 1);
-					nodes_toReplan.addAll(node_plan.transformObservation(node_plan.generatedBy));
+					ArrayList<SearchNode> list_transformed = node_plan.transformObservation(node_plan.generatedBy);
+					for(SearchNode node_trans : list_transformed){
+						node_trans = calculateHeuristic(node_trans);
+						nodes_toReplan.add(node_trans);
+					}					
 				}
 			}
 			path.add(0, node_plan);
