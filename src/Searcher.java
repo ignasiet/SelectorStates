@@ -17,7 +17,12 @@ public class Searcher {
 	private Integer _GeneratedNodes = 0;
 	private Integer i = 0;
 	private ArrayList<Tupla> tupla_Solutions = new ArrayList<Searcher.Tupla>();
-	//private graphplanner gp;
+	private ArrayList<ArrayList<SearchNode>> solution_path = new ArrayList<ArrayList<SearchNode>>();
+	private ArrayList<SearchNode> solution_nodes = new ArrayList<SearchNode>();
+	private ArrayList<SearchNode> nodes_toReplan = new ArrayList<SearchNode>();
+	private boolean nodes_pending = false;
+	private boolean success = false;
+	private Hashtable<String, Integer> observations_made = new Hashtable<String, Integer>();
 	
 	public Searcher(){
 		
@@ -50,10 +55,26 @@ public class Searcher {
 			PriorityQueue<SearchNode> fringe = initFringe();
 			initialState._ActionsApplied = new Hashtable<String, Integer>();
 			fringe.add(initialState);
-			//aStarSearch(fringe);
+			searcherContingentPlan(fringe, domain);
 			//aStar(initialState);
 			//recursiveBFS(domain, initialState, Integer.MAX_VALUE);
-			AndOrSearch(domain, initialState);
+			//AndOrSearch(domain, initialState);
+		}
+	}
+	
+	public void searcherContingentPlan(PriorityQueue<SearchNode> fringe, Domain domain){
+		//aStarSearch(fringe);
+		SearchNode initialState = fringe.poll();
+		recursiveBFS(domain, initialState, Integer.MAX_VALUE);
+		while(nodes_pending){
+			for(int counter_replan=0; counter_replan <nodes_toReplan.size();counter_replan++){
+				SearchNode node_r = nodes_toReplan.get(counter_replan);
+				fringe.clear();
+				fringe.add(node_r);
+				recursiveBFS(domain, fringe.poll(), Integer.MAX_VALUE);
+				//aStarSearch(fringe);
+			}
+			nodes_toReplan.clear();
 		}
 	}
 	
@@ -63,114 +84,38 @@ public class Searcher {
 			SearchNode node = fringe.poll();
 			if(!_VisitedNodes.containsKey(node.state)){
 				_VisitedNodes.put(node.state, 1);
+			}else{
+				continue;
 			}
 			//If node is Goal, return Path
 			if(goalTest(node)){
 				returnPath(node);
-				break;
-			}
-			if(node.isObservationNode){
-				ArrayList<SearchNode> list_results_observations = node.transformObservation(node.generatedBy);
-				PriorityQueue<SearchNode> fringe1 = new PriorityQueue<SearchNode>(fringe);
-				PriorityQueue<SearchNode> fringe2 = new PriorityQueue<SearchNode>(fringe);
-				boolean isFirst = true;
-				for(SearchNode n : list_results_observations){
-					if(isFirst){
-						fringe.add(n);
-						isFirst = false;
-					}else{
-						fringe2.add(n);
-						//aStarSearch(fringe2);
-					}
-				}
+				success = true;
 				break;
 			}
 			//Else expand node
 			for(AbstractAction action : matchApplicableActions(node)){
 				_GeneratedNodes++;
-				if(!node._ActionsApplied.containsKey(action.Name)){
+				if(!action.IsObservation || !node._ActionsApplied.containsKey(action.Name)){
 					fringe.add(expand(node, action));
 				}
 			}
 		}
-	}
-	
-	public void aStar(SearchNode node){
-		if(goalTest(node)){
-			returnPath(node);
-			return;
-		}
-		PriorityQueue<SearchNode> fringe = initFringe();
-		fringe.add(node);
-		while(!fringe.isEmpty()){
-			SearchNode next_node = fringe.poll();
-			if(!_VisitedNodes.containsKey(next_node.state)){
-				_VisitedNodes.put(next_node.state, 1);
-			}
-			else{
-				continue;
-			}
-			if(goalTest(next_node)){
-				returnPath(next_node);
-				return;
-			}
-			if(next_node.isObservationNode){
-				ArrayList<SearchNode> list_results_observations = next_node.transformObservation(next_node.generatedBy);
-				boolean isFirst = true;
-				for(SearchNode n : list_results_observations){
-					graphplanner gp = new graphplanner(n.getState(), domain_translated.list_actions, domain_translated.goalState);
-					n.heuristicValue = gp.heuristicValue();
-					for(AbstractAction action : matchApplicableActions(n)){
-						_GeneratedNodes++;
-						if(!n._ActionsApplied.containsKey(action.Name)){
-							SearchNode node_created = expand(n, action);
-							if(!_VisitedNodes.containsKey(node_created.state)){
-								fringe.add(node_created);
-							}
-						}						
-					}
-					_VisitedNodes.put(n.state, 1);
-					SearchNode topNode = fringe.poll();
-					if(topNode != null){
-						while(_VisitedNodes.containsKey(topNode.state)){
-							topNode = fringe.poll();
-						}
-						if(isFirst){
-							System.out.println("Forking 1: " + n.generatedBy.Name + " cost: " + n.fCost);
-							isFirst = false;
-						}else{
-							System.out.println("Forking 2: " + n.generatedBy.Name + " cost: " + n.fCost);
-						}
-						aStar(topNode);
-					}
-				}
-				return;
-			}
-			//Else expand node
-			for(AbstractAction action : matchApplicableActions(next_node)){
-				if(!next_node._ActionsApplied.containsKey(action.Name)){
-					SearchNode node_created = expand(next_node, action);
-					if(!_VisitedNodes.containsKey(node_created.state)){
-						_GeneratedNodes++;
-						fringe.add(node_created);
-					}
-				}				
-			}
+		if(fringe.isEmpty()){
+			System.out.println("SEARCH FAILED!");
 		}
 	}
 	
 	/** 
-	 * Retorna solução ou palha e um novo limite f-custo
+	 * Retorna solução ou falha e um novo limite f-custo
     */
-	public ArrayList<Tupla> recursiveBFS(Domain domain, SearchNode node, Integer limit){
+	public Tupla recursiveBFS(Domain domain, SearchNode node, Integer limit){
 		//Verify if is goal
 		if(goalTest(node)){
-			System.out.println("This branch reached goal!");
+			//System.out.println("This branch reached goal!");
 			returnPath(node);
-			Tupla return_t = new Tupla(node, 0);
-			ArrayList<Tupla> tupla_return = new ArrayList<Tupla>();
-			tupla_return.add(return_t);			
-			return tupla_return;
+			Tupla return_t = new Tupla(node, 0);			
+			return return_t;
 		}
 		//Fringe init
 		PriorityQueue<SearchNode> fringe = initFringe();
@@ -196,13 +141,10 @@ public class Searcher {
 		while(true){
 			//Order successors according to f
 			SearchNode best = sucessor.peek();
-			//SearchNode best = sucessor.poll();
 			if(best.fCost > limit){
 				Tupla return_t = new Tupla(null, best.fCost);
-				ArrayList<Tupla> tupla_return = new ArrayList<Tupla>();
-				tupla_return.add(return_t);
-				System.out.println("This branch failed!");
-				return tupla_return;
+				//System.out.println("This branch failed!");
+				return return_t;
 			}
 			Integer alternativa;
 			if(sucessor.size()>1){
@@ -218,60 +160,19 @@ public class Searcher {
 			else{
 				alternativa = Integer.MAX_VALUE;
 			}
-			if(best.isObservationNode){
-				System.out.println("Observation Node selected: " + best.generatedBy.Name);
-				ArrayList<SearchNode> list_results_observations = best.transformObservation(best.generatedBy);
-				ArrayList<Tupla> tuplas_list = new ArrayList<Tupla>();
-				for(SearchNode best_derived : list_results_observations){
-					best_derived = calculateHeuristic(best_derived);
-					System.out.println("Call " + i);
-					i++;
-					ArrayList<Tupla> tupla_return = recursiveBFS(domain, best_derived, min(limit, alternativa));
-					for(Tupla t : tupla_return){
-						if(t.node == null){
-							best = sucessor.poll();
-							best.fCost = t.limit;
-							sucessor.add(best);
-						}
-					}
-					tuplas_list.addAll(tupla_return);
-				}
-				for(int iter_tupla = 0; iter_tupla< tuplas_list.size(); iter_tupla++){
-					Tupla t = tuplas_list.get(iter_tupla);
-					if(t.node != null){
-						tupla_Solutions.add(t);
-						tuplas_list.remove(iter_tupla);
-					}
-				}
-			}else{
-				ArrayList<Tupla> tupla_return = recursiveBFS(domain, best, min(limit, alternativa));
-				for(int iter_tupla = 0; iter_tupla< tupla_return.size(); iter_tupla++){
-					Tupla t = tupla_return.get(iter_tupla);
-					if(t.node != null){
-						return tupla_return;
-					}
-				}
-				//return tupla_return;
-				/*if(tupla.node != null){
-					ArrayList<Tupla> tupla_return = new ArrayList<Tupla>();
-					tupla_return.add(tupla);
+			Tupla tupla_return = recursiveBFS(domain, best, min(limit, alternativa));
+			//return tupla_return;
+			if(tupla_return != null){
+				best.fCost = tupla_return.limit;
+				sucessor.poll();
+				sucessor.add(best);
+				if(tupla_return.node != null){
 					return tupla_return;
-				}*/
-			}			
+				}
+			}
 		}
 	}
 	
-	public void AndOrSearch(Domain domain, SearchNode initialState){
-		orSearch(domain, initialState);
-	}
-	
-	private void orSearch(Domain domain, SearchNode node) {
-		if(goalTest(node)){
-			returnPath(node);
-			return;
-		}
-	}
-
 	private ArrayList<AbstractAction> matchApplicableActions(SearchNode node){
 		ArrayList<AbstractAction> return_list = new ArrayList<AbstractAction>();
 		Enumeration<String> e = domain_translated.list_actions.keys();
@@ -314,13 +215,25 @@ public class Searcher {
 	}
 
 	private void returnPath(SearchNode node) {
+		ArrayList<SearchNode> path = new ArrayList<SearchNode>();
+		solution_nodes.add(node);
 		System.out.println("GOAL!");
 		System.out.println("Found plan: ");
 		SearchNode node_plan = node;
+		path.clear();
 		while(!(node_plan.Parent_node == null)){
 			System.out.println(node_plan.generatedBy.Name);
+			if(node_plan.isObservationNode){
+				if(!observations_made.containsKey(node_plan.generatedBy.Name)){
+					observations_made.put(node_plan.generatedBy.Name, 1);
+					nodes_toReplan.addAll(node_plan.transformObservation(node_plan.generatedBy));
+					nodes_pending = true;
+				}
+			}
+			path.add(0, node_plan);
 			node_plan = node_plan.Parent_node;
 		}
+		solution_path.add(path);
 	}
 
 	private boolean goalTest(SearchNode node){

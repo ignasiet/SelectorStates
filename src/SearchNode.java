@@ -19,6 +19,7 @@ public class SearchNode {
 	public AbstractAction generatedBy = null;
 	public SearchNode Parent_node = null;
 	public boolean isObservationNode = false;
+	public ArrayList<SearchNode> sucessor_node = new ArrayList<SearchNode>();
 	
 	public SearchNode(Hashtable<String, Integer> state_copy){
 		state = new Hashtable<String, Integer>(state_copy);

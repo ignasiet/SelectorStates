@@ -101,6 +101,7 @@ public class Translator {
 				}
 				for(String positive_effect : a._Positive_effects){
 					a_translated._Positive_effects.add("K" + positive_effect);
+					a_translated._Negative_effects.add("~K~" + positive_effect);
 				}
 				for(String negat_effect : a._Negative_effects){
 					if(negat_effect.startsWith("~")){
