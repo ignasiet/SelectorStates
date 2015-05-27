@@ -21,8 +21,9 @@ public class Searcher {
 	private ArrayList<ArrayList<SearchNode>> solution_path = new ArrayList<ArrayList<SearchNode>>();
 	private ArrayList<SearchNode> solution_nodes = new ArrayList<SearchNode>();
 	private ArrayList<SearchNode> nodes_toReplan = new ArrayList<SearchNode>();
-	private ArrayList<SearchNode> nodes_pending = new ArrayList<SearchNode>();
-	private boolean success = false;
+	//private ArrayList<SearchNode> nodes_pending = new ArrayList<SearchNode>();
+	//private boolean success = false;
+	public SolutionPlan solution = new SolutionPlan();
 	private Hashtable<String, Integer> observations_made = new Hashtable<String, Integer>();
 	
 	public Searcher(){
@@ -85,7 +86,7 @@ public class Searcher {
 			//If node is Goal, return Path
 			if(goalTest(node)){
 				returnPath(node);
-				success = true;
+				//success = true;
 				break;
 			}
 			//Else expand node
@@ -163,7 +164,8 @@ public class Searcher {
 		SearchNode node_plan = node;
 		path.clear();
 		while(!(node_plan.Parent_node == null)){
-			System.out.println(node_plan.generatedBy.Name);
+			//Print action
+			//System.out.println(node_plan.generatedBy.Name);
 			if(node_plan.isObservationNode){
 				if(!observations_made.containsKey(node_plan.generatedBy.Name)){
 					observations_made.put(node_plan.generatedBy.Name, 1);
@@ -176,6 +178,15 @@ public class Searcher {
 			}
 			path.add(0, node_plan);
 			node_plan = node_plan.Parent_node;
+		}
+		//Iterate solution_nodes
+		for(SearchNode solutionNode : path){
+			if(solutionNode.Parent_node != null && solutionNode.Parent_node.generatedBy != null){
+				solution.AddNode(solutionNode.generatedBy.Name, solutionNode.Parent_node.generatedBy.Name);
+			}
+			else{
+				solution.AddNode(solutionNode.generatedBy.Name, "root");
+			}
 		}
 		solution_path.add(path);
 	}
