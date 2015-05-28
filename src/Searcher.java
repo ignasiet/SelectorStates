@@ -19,12 +19,16 @@ public class Searcher {
 	private Integer _GeneratedNodes = 0;
 	private Integer i = 0;
 	private ArrayList<ArrayList<SearchNode>> solution_path = new ArrayList<ArrayList<SearchNode>>();
+	//private ArrayList<ArrayList<String>> action_path = new ArrayList<ArrayList<String>>();
 	private ArrayList<SearchNode> solution_nodes = new ArrayList<SearchNode>();
 	private ArrayList<SearchNode> nodes_toReplan = new ArrayList<SearchNode>();
 	//private ArrayList<SearchNode> nodes_pending = new ArrayList<SearchNode>();
 	//private boolean success = false;
-	public SolutionPlan solution = new SolutionPlan();
+	//private Hashtable<String, Integer> actions_done = new Hashtable<String, Integer>();
 	private Hashtable<String, Integer> observations_made = new Hashtable<String, Integer>();
+	private SolutionPlan solution = new SolutionPlan();
+	private Hashtable<String, String> walked_nodes = new Hashtable<String, String>();
+	//private Hashtable<String, ArrayList<SearchNode>> nodes_solution = new Hashtable<String, ArrayList<SearchNode>>();
 	
 	public Searcher(){
 		
@@ -65,9 +69,57 @@ public class Searcher {
 			fringe.add(node_r);
 			aStarSearch(fringe);
 		}
-		System.out.println("Number of solutions found: " + solution_nodes.size());
+		System.out.println("Number of solutions found: " + solution_nodes.size());		
+		System.out.println("Path created.");
+		printSolution();
 	}
 	
+	private void printSolution() {
+		//SolutionPlan solution = new SolutionPlan();
+		String printedPlan = "";
+		for(ArrayList<SearchNode> path : solution_path){
+			System.out.println("--------------------------------");
+			int i = 0;
+			printedPlan = printedPlan + "\n";
+			for(SearchNode node_in_path : path){				
+				if(!node_in_path.isObservationNode){
+					printedPlan = printedPlan + " " + node_in_path.generatedBy.Name;
+					i++;
+					walked_nodes.put(node_in_path.generatedBy.Name, "");
+				}
+				else{
+					printedPlan = printedPlan + " " + node_in_path.generatedBy.Name;
+					i++;
+					if(!(path.get(i).observation_divisor == null)){
+						printedPlan = printedPlan + " " + printSubplan(path, i);
+					}else{
+						printedPlan = "";
+					}
+					break;
+				}
+			}
+		}
+		System.out.println(printedPlan);
+	}
+
+	private String printSubplan(ArrayList<SearchNode> path, int i2) {
+		String returnString = "";
+		returnString = returnString + "\n If " + path.get(i2).observation_divisor + " {";
+		for(int i = i2; i < path.size(); i ++){
+			if(!path.get(i).isObservationNode){
+				returnString = returnString + " " + path.get(i).generatedBy.Name;
+			}
+			else{
+				if(!(path.get(i).observation_divisor == null)){
+					
+				}
+				break;
+			}
+		}
+		returnString = returnString + " } ";
+		return returnString;
+	}
+
 	public void aStarSearch(Queue<SearchNode> fringe){
 		Hashtable<String, Integer> Actions_in_fringe = new Hashtable<String, Integer>();
 		while(!fringe.isEmpty()){
@@ -111,7 +163,7 @@ public class Searcher {
 			}
 		}
 		if(fringe.isEmpty()){
-			System.out.println("SEARCH FAILED!");
+			//System.out.println("SEARCH FAILED!");
 		}
 	}
 	
@@ -141,26 +193,11 @@ public class Searcher {
 		return null;
 	}
 	
-	private ArrayList<SearchNode> expandObservation(SearchNode node, AbstractAction a) {
-		ArrayList<SearchNode> nodes_sucessor = new ArrayList<SearchNode>(node.expandObservation(a));
-		for(SearchNode node_created : nodes_sucessor){
-			if(node_created != null){
-				graphplanner gp = new graphplanner(node_created.getState(), domain_translated.list_actions, domain_translated.goalState);
-				if(!gp.fail){
-					node_created.heuristicValue = gp.heuristicValue();
-					node_created.pathCost = node.pathCost + 1;
-					node_created.fCost = node_created.heuristicValue + node_created.pathCost;
-				}
-			}
-		}
-		return nodes_sucessor;
-	}
-
 	private void returnPath(SearchNode node) {
 		ArrayList<SearchNode> path = new ArrayList<SearchNode>();
 		solution_nodes.add(node);
-		System.out.println("GOAL!");
-		System.out.println("Found plan: ");
+		//System.out.println("GOAL!");
+		//System.out.println("Found plan: ");
 		SearchNode node_plan = node;
 		path.clear();
 		while(!(node_plan.Parent_node == null)){
@@ -169,16 +206,20 @@ public class Searcher {
 			if(node_plan.isObservationNode){
 				if(!observations_made.containsKey(node_plan.generatedBy.Name)){
 					observations_made.put(node_plan.generatedBy.Name, 1);
+					//Create the 2 observations:
 					ArrayList<SearchNode> list_transformed = node_plan.transformObservation(node_plan.generatedBy);
 					for(SearchNode node_trans : list_transformed){
 						node_trans = calculateHeuristic(node_trans);
 						nodes_toReplan.add(node_trans);
-					}					
+					}
 				}
 			}
 			path.add(0, node_plan);
+			String action_done = node_plan.generatedBy.Name;			
 			node_plan = node_plan.Parent_node;
+			node_plan._applyAction = action_done;
 		}
+		//path.add(0, node_plan);
 		//Iterate solution_nodes
 		for(SearchNode solutionNode : path){
 			if(solutionNode.Parent_node != null && solutionNode.Parent_node.generatedBy != null){
@@ -186,6 +227,10 @@ public class Searcher {
 			}
 			else{
 				solution.AddNode(solutionNode.generatedBy.Name, "root");
+			}
+			if(solutionNode.observation_divisor != null){
+				//System.out.println("Node: " + node_in_solution_path._applyAction + " Obs: " + node_in_solution_path.observation_divisor);
+				solution.put_observation(solutionNode._applyAction, solutionNode.observation_divisor);
 			}
 		}
 		solution_path.add(path);

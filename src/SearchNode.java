@@ -17,8 +17,10 @@ public class SearchNode {
 	public int pathCost = 0;
 	public int fCost = 0;
 	public AbstractAction generatedBy = null;
+	public String _applyAction;
 	public SearchNode Parent_node = null;
 	public boolean isObservationNode = false;
+	public String observation_divisor;
 	public ArrayList<SearchNode> sucessor_node = new ArrayList<SearchNode>();
 	
 	public SearchNode(Hashtable<String, Integer> state_copy){
@@ -62,6 +64,7 @@ public class SearchNode {
 			}
 			node_sucessor.state.remove(effect_negative);
 		}
+		_applyAction = a.Name;
 		return node_sucessor;
 	}
 	
@@ -112,11 +115,13 @@ public class SearchNode {
 		for(String effect_positive : a._Positive_effects){
 			if(isFirst){
 				node_sucessor_positive.state.put(effect_positive, 1);
+				node_sucessor_positive.observation_divisor = effect_positive;
 				node_sucessor_negative.state.remove(effect_positive);
 				isFirst = false;
 			}else{
 				node_sucessor_negative.state.put(effect_positive, 1);
 				node_sucessor_positive.state.remove(effect_positive);
+				node_sucessor_negative.observation_divisor = effect_positive;
 			}			
 		}
 		ArrayList<SearchNode> list_return = new ArrayList<SearchNode>();
