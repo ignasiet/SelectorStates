@@ -21,6 +21,7 @@ public class Searcher {
 	private ArrayList<SearchNode> solution_nodes = new ArrayList<SearchNode>();
 	private ArrayList<SearchNode> nodes_toReplan = new ArrayList<SearchNode>();
 	private Hashtable<String, Integer> observations_made = new Hashtable<String, Integer>();
+	private SolutionTree solutionTree = new SolutionTree();
 	
 	public Searcher(){
 		
@@ -63,14 +64,12 @@ public class Searcher {
 		}
 		System.out.println("Number of solutions found: " + solution_nodes.size());
 		printSolution();
-		System.out.println("Path created.");
+		//System.out.println("Path created.");
 	}
 	
-	private void printSolution() {
-		SolutionTree solutionTree = new SolutionTree();
+	private void printSolution() {		
 		TreeNode last_node = new TreeNode("root");
 		for(ArrayList<SearchNode> path : solution_path){
-			System.out.println("==================================================== ");
 			if(!solutionTree.hasRoot()){				
 				solutionTree.root = last_node;
 			}else{
@@ -79,20 +78,16 @@ public class Searcher {
 			for(SearchNode nodeTreated : path){
 				if(!last_node.hasChild(nodeTreated.generatedBy.Name)){
 					TreeNode tNode = new TreeNode(nodeTreated.generatedBy.Name);
-					last_node.sucessor.add(tNode);
+					last_node.addNode(tNode);
 					last_node = tNode;
 				}else{
-					TreeNode tNode = last_node.sucessor.get(0);
+					TreeNode tNode = last_node.getChildren(nodeTreated.generatedBy.Name);
 					last_node = tNode;
-				}
-				
-				if(nodeTreated.isObservationNode){
-					System.out.println(nodeTreated.generatedBy.Name);
-					//break;
 				}
 			}
 		}
 		System.out.println("Path created.");
+		solutionTree.printTree();
 	}
 
 	public void aStarSearch(Queue<SearchNode> fringe){
@@ -171,14 +166,10 @@ public class Searcher {
 	private void returnPath(SearchNode node) {
 		ArrayList<SearchNode> path = new ArrayList<SearchNode>();
 		solution_nodes.add(node);
-		//System.out.println("GOAL!");
-		//System.out.println("Found plan: ");
 		SearchNode node_plan = node;
 		path.clear();
 		boolean discardPlan = false;
 		while(!(node_plan.Parent_node == null)){
-			//Print action
-			//System.out.println(node_plan.generatedBy.Name);
 			if(node_plan.isObservationNode){
 				if(!observations_made.containsKey(node_plan.generatedBy.Name)){
 					observations_made.put(node_plan.generatedBy.Name, 1);
@@ -198,18 +189,11 @@ public class Searcher {
 		}
 		//path.add(0, node_plan);
 		//Iterate solution_nodes
-		/*for(SearchNode solutionNode : path){
-			if(solutionNode.Parent_node != null && solutionNode.Parent_node.generatedBy != null){
-				solution.AddNode(solutionNode.generatedBy.Name, solutionNode.Parent_node.generatedBy.Name);
-			}
-			else{
-				solution.AddNode(solutionNode.generatedBy.Name, "root");
-			}
+		for(SearchNode solutionNode : path){
 			if(solutionNode.observation_divisor != null){
-				//System.out.println("Node: " + node_in_solution_path._applyAction + " Obs: " + node_in_solution_path.observation_divisor);
-				solution.put_observation(solutionNode._applyAction, solutionNode.observation_divisor);
+				solutionTree.put_observation(solutionNode._applyAction, solutionNode.observation_divisor);
 			}
-		}*/
+		}
 		if(!discardPlan){
 			solution_path.add(path);
 		}
