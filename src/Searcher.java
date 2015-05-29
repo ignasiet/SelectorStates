@@ -67,24 +67,28 @@ public class Searcher {
 	}
 	
 	private void printSolution() {
-		Hashtable<String, SearchNode> used_nodes = new Hashtable<String, SearchNode>();
-		ArrayList<SearchNode> monoPath = new ArrayList<SearchNode>();
+		SolutionTree solutionTree = new SolutionTree();
+		TreeNode last_node = new TreeNode("root");
 		for(ArrayList<SearchNode> path : solution_path){
 			System.out.println("==================================================== ");
-			for(SearchNode nodeTreated : path){
-				if(nodeTreated.isObservationNode){
-					used_nodes.put(nodeTreated.generatedBy.Name, nodeTreated);
-					System.out.println(nodeTreated.generatedBy.Name);
-				}
+			if(!solutionTree.hasRoot()){				
+				solutionTree.root = last_node;
+			}else{
+				last_node = solutionTree.root;
 			}
-			System.out.println("----------------------------------------------------");
-			for(int i = path.size()-1 ; i >= 0 ; i--){
-				if(path.get(i).observation_divisor == null){
-					System.out.println(path.get(i).generatedBy.Name);
+			for(SearchNode nodeTreated : path){
+				if(!last_node.hasChild(nodeTreated.generatedBy.Name)){
+					TreeNode tNode = new TreeNode(nodeTreated.generatedBy.Name);
+					last_node.sucessor.add(tNode);
+					last_node = tNode;
 				}else{
-					used_nodes.get(path.get(i).generatedBy.Name);
-					System.out.println(path.get(i).generatedBy.Name);
-					break;
+					TreeNode tNode = last_node.sucessor.get(0);
+					last_node = tNode;
+				}
+				
+				if(nodeTreated.isObservationNode){
+					System.out.println(nodeTreated.generatedBy.Name);
+					//break;
 				}
 			}
 		}
