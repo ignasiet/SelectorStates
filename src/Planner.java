@@ -38,9 +38,9 @@ public class Planner {
 		Printer.Printer(domain);
 		for(int i = 1;i < 2;i++){
 			parseInit(path + problem);
-			//String hidden = "hidden1.pddl";
+			String hidden = "hidden5.pddl";
 			//System.out.println("Done parsing initial state.");
-			String hidden = "hidden" + i + ".pddl";
+			//String hidden = "hidden" + i + ".pddl";
 			System.out.println("Problem real: " + hidden);
 			parseHidden(path + hidden);
 			
@@ -50,6 +50,7 @@ public class Planner {
 			//Printer.Printer(tr.domain_translated);
 			Searcher aStar = new Searcher();
 			aStar.searchPlan(tr.domain_translated);
+			tryPlan(aStar.getSolution());
 			
 			/*createPlan(path_planner, path_problem);
 			plan.clear();
@@ -110,6 +111,27 @@ public class Planner {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private static boolean tryPlan(SolutionTree treePlan){
+		boolean result = true;
+		TreeNode action_node = treePlan.root;
+		if(action_node.name.equals("root")){
+			action_node = action_node.left_sucessor;
+		}
+		while(action_node.left_sucessor != null){
+			System.out.println("Executing: " + action_node.name);
+			if(domain.applyAction(action_node.name)){
+				actions_executed++;
+				actions_left--;
+				//System.out.println("Action : " + action + " is possible");
+			}else{
+				System.out.println("Action error.");
+				return false;
+			}
+			action_node = action_node.left_sucessor;
+		}
+		return result;		
 	}
 	
 	private static boolean testPlan(){

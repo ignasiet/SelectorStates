@@ -27,6 +27,10 @@ public class Searcher {
 		
 	}
 	
+	public SolutionTree getSolution(){
+		return solutionTree;
+	}
+	
 	private Queue<SearchNode> initFringe(){
 		//init Priority queue
 		PriorityQueue<SearchNode> fringe = new PriorityQueue<SearchNode>(nMax, 
@@ -70,24 +74,26 @@ public class Searcher {
 	private void printSolution() {		
 		TreeNode last_node = new TreeNode("root");
 		for(ArrayList<SearchNode> path : solution_path){
-			if(!solutionTree.hasRoot()){				
+			if(!solutionTree.hasRoot()){
 				solutionTree.root = last_node;
 			}else{
 				last_node = solutionTree.root;
 			}
 			for(SearchNode nodeTreated : path){
-				if(!last_node.hasChild(nodeTreated.generatedBy.Name)){
-					TreeNode tNode = new TreeNode(nodeTreated.generatedBy.Name);
-					last_node.addNode(tNode);
-					last_node = tNode;
-				}else{
-					TreeNode tNode = last_node.getChildren(nodeTreated.generatedBy.Name);
-					last_node = tNode;
+				if(!last_node.name.equals(nodeTreated.generatedBy.Name)){
+					if(!last_node.hasChild(nodeTreated.generatedBy.Name)){
+						TreeNode tNode = new TreeNode(nodeTreated.generatedBy.Name);
+						last_node.addNode(tNode);
+						last_node = tNode;
+					}else{
+						TreeNode tNode = last_node.getChildren(nodeTreated.generatedBy.Name);
+						last_node = tNode;
+					}
 				}
 			}
 		}
 		System.out.println("Path created.");
-		solutionTree.printTree();
+		//solutionTree.printTree();
 	}
 
 	public void aStarSearch(Queue<SearchNode> fringe){
