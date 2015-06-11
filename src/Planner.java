@@ -20,14 +20,14 @@ public class Planner {
 	
 	public static void startPlanner(){
 		
-/*		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
+		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
 		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
 		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
-		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";*/
-		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
+		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";
+/*		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
 		String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
 		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/";
-		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
+		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";*/
 		boolean success = false;
 		init();
 		domain.ground_all_actions();
@@ -38,7 +38,7 @@ public class Planner {
 		Printer.Printer(domain);
 		for(int i = 1;i < 2;i++){
 			parseInit(path + problem);
-			String hidden = "hidden5.pddl";
+			String hidden = "hidden6.pddl";
 			//System.out.println("Done parsing initial state.");
 			//String hidden = "hidden" + i + ".pddl";
 			System.out.println("Problem real: " + hidden);
@@ -119,17 +119,24 @@ public class Planner {
 		if(action_node.name.equals("root")){
 			action_node = action_node.left_sucessor;
 		}
-		while(action_node.left_sucessor != null){
-			System.out.println("Executing: " + action_node.name);
-			if(domain.applyAction(action_node.name)){
-				actions_executed++;
-				actions_left--;
-				//System.out.println("Action : " + action + " is possible");
+		while(action_node.left_sucessor != null){			
+			if(domain.list_actions.get(action_node.name).IsObservation){
+				System.out.println("Observing: " + action_node.name);
+				String observation = domain.sensingAction(action_node.name);
+				System.out.println("Observed: " + observation);
+				action_node = treePlan.getObservationNode(action_node, observation);
 			}else{
-				System.out.println("Action error.");
-				return false;
-			}
-			action_node = action_node.left_sucessor;
+				System.out.println("Executing: " + action_node.name);
+				if(domain.applyAction(action_node.name)){
+					actions_executed++;
+					actions_left--;
+					//System.out.println("Action : " + action + " is possible");
+				}else{
+					System.out.println("Action error.");
+					return false;
+				}
+				action_node = action_node.left_sucessor;
+			}			
 		}
 		return result;		
 	}

@@ -10,6 +10,7 @@ public class SolutionTree {
 	public TreeNode last_node;
 	private Stack<TreeNode> stack_nodes = new Stack<TreeNode>();
 	private Hashtable<String, String> observations = new Hashtable<String, String>();
+	private Hashtable<String, String> observations_reversed = new Hashtable<String, String>();
 	//private ArrayList<TreeNode> stack_nodes = new ArrayList<TreeNode>();
 	
 	public SolutionTree() {
@@ -55,6 +56,14 @@ public class SolutionTree {
 
 	public void put_observation(String _applyAction, String observation_divisor) {
 		observations.put(_applyAction, observation_divisor);
+		observations_reversed.put(observation_divisor, _applyAction);
+	}
+	
+
+	
+	public TreeNode getObservationNode(TreeNode tNode, String observation){
+		String next = observations_reversed.get("K" + observation);
+		return tNode.getChildren(next);
 	}
 
 }

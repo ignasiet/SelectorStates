@@ -263,17 +263,32 @@ public class Domain {
 
 	public boolean applyAction(String action_name){
 		if(!list_actions.containsKey(action_name.toLowerCase())){
-			//System.out.println("Error: action " + action_name + " not found.");
-		}
-		AbstractAction a = list_actions.get(action_name.toLowerCase());
-		if(isActionApplicable(a) && isActionReallyApplicable(a)){
-			applyEffects(a);
+			System.out.println("Action " + action_name + " not found. Possibly deductive action.");
 			return true;
+		}else{
+			AbstractAction a = list_actions.get(action_name.toLowerCase());
+			if(isActionApplicable(a) && isActionReallyApplicable(a)){
+				applyEffects(a);
+				return true;
+			}
+			else{
+				getInfosBeforeReplanning(a);
+				return false;
+			}
 		}
-		else{
-			getInfosBeforeReplanning(a);
-			return false;
+		
+	}
+	
+	public String sensingAction(String action_name){
+		String observation = "";
+		AbstractAction a = list_actions.get(action_name.toLowerCase());
+		String predicate_observed = a._Positive_effects.get(0);
+		if(hidden_state.containsKey(predicate_observed)){
+			observation = predicate_observed;
+		}else{
+			observation = "~" + predicate_observed;
 		}
+		return observation;
 	}
 	
 	private void getInfosBeforeReplanning(AbstractAction a) {
