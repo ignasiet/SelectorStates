@@ -245,7 +245,7 @@ public class Planner {
 			}
 			extractDeductiveRules(content1);
 			extractSensingRules(content1);
-			//extractRules(content1);
+			extractRules(content1);
 			//extractExclusionRules(content1);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -362,22 +362,27 @@ public class Planner {
 			String[] text_splited = text_deductive_actions.trim().split("\n");
 			for(String formula : text_splited){
 				Action a = new Action();
+				Action a_opposed = new Action();
 				formula = formula.replace("(or ", "");
 				formula = formula.substring(0, formula.lastIndexOf(")"));
 				Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(formula);
 			    while(m.find()){
 			    	String aux = Planner.cleanString(m.group(1));
 			    	if(aux.startsWith("~")){
+			    		a_opposed._precond.add(aux);
 			    		aux = aux.substring(1);
 			    		a._precond.add(aux);
 			    	}
 			    	else{
 			    		a._Positive_effects.add(aux);
+			    		a_opposed._Positive_effects.add("~"+aux);
 			    		a.Name = "deduct-stench-" + aux;
+			    		a_opposed.Name = "deduct-not-stench-" + aux;
 			    	}
 			    }
 			    //a._Positive_effects.add("lock");
 			    domain.list_actions.put(a.Name, a);
+			    domain.list_actions.put(a.Name, a_opposed);
 			}			
 		}
 	}
