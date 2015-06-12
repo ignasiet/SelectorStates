@@ -20,14 +20,14 @@ public class Planner {
 	
 	public static void startPlanner(){
 		
-/*		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
+		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
 		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
 		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
-		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";*/
-		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
+		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";
+/*		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
 		String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
 		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/";
-		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
+		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";*/
 		boolean success = false;
 		init();
 		domain.ground_all_actions();
@@ -245,7 +245,7 @@ public class Planner {
 			}
 			extractDeductiveRules(content1);
 			extractSensingRules(content1);
-			extractRules(content1);
+			//extractRules(content1);
 			//extractExclusionRules(content1);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
