@@ -268,6 +268,7 @@ public class Planner {
 	private static void extractDeductiveRules(String content1){
 		int init_safes = content1.indexOf(";;; Safes");
 		int fin_safes = content1.indexOf(";;; Exclution");
+		int counter = 1;
 		if(init_safes > 0 && fin_safes > 0){
 			String text_deductive_actions = content1.substring(init_safes + 9, fin_safes);
 			text_deductive_actions = text_deductive_actions.replace("\t\n", "");
@@ -291,11 +292,11 @@ public class Planner {
 			    		isFirst = false;
 			    	}else{
 			    		if(aux.startsWith("~")){
-			    			a.Name = "deduct-not-" + aux.substring(1);
+			    			a.Name = counter + "deduct-not-" + aux.substring(1);
 			    			a._Negative_effects.add(aux.substring(1));
 			    		}
 			    		else{
-			    			a.Name = "deduct-" + aux;
+			    			a.Name = counter + "deduct-" + aux;
 			    			a._Positive_effects.add(aux);
 			    		}
 			    		
@@ -304,10 +305,12 @@ public class Planner {
 						domain.predicates_grounded.add(aux.trim());
 						domain.predicates_count.put(aux.trim(), 1);
 					}
+			    	
 			    }
 			    //a._Positive_effects.add("lock");
 			    domain.list_actions.put(a.Name, a);
-			}
+			    counter++;
+			}			
 		}
 	}
 	
@@ -382,7 +385,7 @@ public class Planner {
 			    }
 			    //a._Positive_effects.add("lock");
 			    domain.list_actions.put(a.Name, a);
-			    domain.list_actions.put(a.Name, a_opposed);
+			    domain.list_actions.put(a_opposed.Name, a_opposed);
 			}			
 		}
 	}
