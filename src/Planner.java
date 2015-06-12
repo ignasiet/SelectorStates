@@ -20,36 +20,39 @@ public class Planner {
 	
 	public static void startPlanner(){
 		
-		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
+/*		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
 		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
 		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
-		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";
-/*		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
+		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";*/
+		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
 		String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
 		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/";
-		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";*/
+		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
 		boolean success = false;
 		init();
 		domain.ground_all_actions();
 		//System.out.println("Done grounding.");
 		//String problem = "pW" + randInt(1, 7) + ".pddl";
-		String problem = "pW1.pddl";
+		String problem = "pW0.pddl";
 		System.out.println("Printing");
 		Printer.Printer(domain);
 		for(int i = 1;i < 2;i++){
 			parseInit(path + problem);
-			String hidden = "hidden6.pddl";
+			//String hidden = "hidden5.pddl";
 			//System.out.println("Done parsing initial state.");
-			//String hidden = "hidden" + i + ".pddl";
+			String hidden = "hidden" + i + ".pddl";
 			System.out.println("Problem real: " + hidden);
 			parseHidden(path + hidden);
 			
 			domain.getInvariantPredicates();
 			domain.eliminateInvalidActions();
 			Translator tr = new Translator(domain);
-			//Printer.Printer(tr.domain_translated);
+			Printer.Printer(tr.domain_translated);
 			Searcher aStar = new Searcher();
+			long startTime = System.currentTimeMillis();
 			aStar.searchPlan(tr.domain_translated);
+			long endTime = System.currentTimeMillis();
+			System.out.println("Time: " + (endTime - startTime) + " Milliseconds");			
 			tryPlan(aStar.getSolution());
 			
 			/*createPlan(path_planner, path_problem);
@@ -199,13 +202,13 @@ public class Planner {
 		domain.addActions(b);
 		
 		/*Action feel*/
-		Action c = new Action();
+		/*Action c = new Action();
 		c.Name = "feel-breeze";
 		c.parseParameters("?pos - pos");
 		c.parsePreconditions("(alive) (at ?pos)");
 		c.parseEffects("(breeze ?pos)");
 		c.IsObservation = true;
-		domain.addActions(c);
+		domain.addActions(c);*/
 		
 		/*Action grab*/
 		Action d = new Action();
@@ -302,6 +305,7 @@ public class Planner {
 						domain.predicates_count.put(aux.trim(), 1);
 					}
 			    }
+			    //a._Positive_effects.add("lock");
 			    domain.list_actions.put(a.Name, a);
 			}
 		}
@@ -343,6 +347,7 @@ public class Planner {
 			    		}
 			    	}
 			    }
+			    //a._Positive_effects.add("lock");
 			    domain.list_actions.put(a.Name, a);
 			}			
 		}		
@@ -371,6 +376,7 @@ public class Planner {
 			    		a.Name = "deduct-stench-" + aux;
 			    	}
 			    }
+			    //a._Positive_effects.add("lock");
 			    domain.list_actions.put(a.Name, a);
 			}			
 		}

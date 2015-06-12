@@ -93,7 +93,7 @@ public class Searcher {
 			}
 		}
 		System.out.println("Path created.");
-		//solutionTree.printTree();
+		solutionTree.printTree();
 	}
 
 	public void aStarSearch(Queue<SearchNode> fringe){

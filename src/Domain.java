@@ -30,10 +30,16 @@ public class Domain {
 	    while(m.find()) {	    	
 	    	predicates.add(m.group(1));
 	    }
+	    //predicates.add("lock");
 	}
 	
 	public void addActions(Action a){
 		//list_actions.put(a.Name, a);
+		/*if(a.IsObservation){
+			a._Negative_effects.add("lock");
+		}else{
+			a._precond.add("lock");
+		}*/
 		action_list.add(a);
 	}
 	
@@ -237,6 +243,7 @@ public class Domain {
 		    	predicates_uncertain.add(aux);
 		    }
 		    initial_state = initial_state.substring(0, index_oneof);
+		    addDeductiveOneOfAction();
 		}
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(initial_state);
 	    while(m.find()) {
@@ -251,8 +258,24 @@ public class Domain {
 	    	}
 	    	state.put(auxString, 1);
 	    }
+	    //state.put("lock", 1);
 	}
 	
+	private void addDeductiveOneOfAction() {
+		for(String pred : predicates_uncertain){
+			Action a = new Action();
+			a.Name = "OneOf-" + pred;
+			a._precond.add(pred);
+			for(String otherPred : predicates_uncertain){
+				if(!otherPred.equals(pred)){
+					a._Negative_effects.add(otherPred);
+				}				
+			}
+			//a._Positive_effects.add("lock");
+			list_actions.put(a.Name, a);
+		}
+	}
+
 	public void addHiddenState(String initial_state){
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(initial_state);
 	    while(m.find()) {
@@ -342,9 +365,6 @@ public class Domain {
 		for(String precondition : a._precond){
 			if(precondition.startsWith("~")){
 				if(hidden_state.containsKey(precondition.substring(1))){
-					//System.out.println("Action failed in real world: " + a.Name);
-					//System.out.println("Precondition negated" + precondition + " not found.");
-					//System.out.println("Found negated " + precondition.substring(1) + " precondition.");
 					return false;
 				}
 			}
