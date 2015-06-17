@@ -17,7 +17,7 @@ public class Translator {
 	protected Domain domain_translated = new Domain();
 	
 	public Translator(Domain domain_to_translate) {
-		//TODO: 1 - Translate predicates (all)
+		// 1 - Translate predicates (all)
 		translatePredicates(domain_to_translate.predicates_grounded, domain_to_translate.predicates_uncertain);
 		// 2-Translate initial state
 		translateInitialState(domain_to_translate.state);

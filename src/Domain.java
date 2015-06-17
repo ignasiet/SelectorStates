@@ -319,12 +319,8 @@ public class Domain {
 	
 	private void getInfosBeforeReplanning(AbstractAction a) {
 		for(String precond : a._precond){
-			if(precond.startsWith("~")){
-				precond = precond.replace("~", "");
-				state.put(precond,1);
-			}
-			else{
-				state.put("~" + precond, 1);
+			if(!hidden_state.containsKey(precond)){
+				state.remove(precond);
 			}
 		}	
 	}
