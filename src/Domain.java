@@ -265,13 +265,14 @@ public class Domain {
 		for(String pred : predicates_uncertain){
 			Action a = new Action();
 			a.Name = "OneOf-" + pred;
-			a._precond.add(pred);
+			a._Negative_effects.add(pred);
 			for(String otherPred : predicates_uncertain){
 				if(!otherPred.equals(pred)){
-					a._Negative_effects.add(otherPred);
+					a._precond.add(otherPred);
 				}				
 			}
 			//a._Positive_effects.add("lock");
+			a.deductive_action = true;
 			list_actions.put(a.Name, a);
 		}
 	}
@@ -311,6 +312,8 @@ public class Domain {
 		}else{
 			observation = "~" + predicate_observed;
 		}
+		state.put(observation, 1);
+		hidden_state.put(observation, 1);
 		return observation;
 	}
 	

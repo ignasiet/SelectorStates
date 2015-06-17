@@ -8,6 +8,8 @@ public class TreeNode {
 	//public ArrayList<TreeNode> sucessor = new ArrayList<TreeNode>();
 	public TreeNode right_sucessor;
 	public TreeNode left_sucessor;
+	public String decissor_right;
+	public String decissor_left;
 	
 	
 	public TreeNode(String n) {
@@ -26,8 +28,10 @@ public class TreeNode {
 	public void addNode(TreeNode childNode){
 		if(left_sucessor == null){
 			left_sucessor = childNode;
+			childNode.parent = name;
 		}else if(right_sucessor == null){
 			right_sucessor = childNode;
+			childNode.parent = name;
 		}
 	}
 

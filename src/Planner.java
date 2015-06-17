@@ -20,27 +20,27 @@ public class Planner {
 	
 	public static void startPlanner(){
 		
-		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
+/*		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
 		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
 		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
-		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";
-/*		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
+		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";*/
+		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
 		String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
 		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/";
-		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";*/
+		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
 		boolean success = false;
 		init();
 		domain.ground_all_actions();
 		//System.out.println("Done grounding.");
 		//String problem = "pW" + randInt(1, 7) + ".pddl";
-		String problem = "pW0.pddl";
+		String problem = "pW0-Complete.pddl";
 		System.out.println("Printing");
 		Printer.Printer(domain);
 		for(int i = 1;i < 2;i++){
 			parseInit(path + problem);
-			//String hidden = "hidden5.pddl";
+			String hidden = "hidden7.pddl";
 			//System.out.println("Done parsing initial state.");
-			String hidden = "hidden" + i + ".pddl";
+			//String hidden = "hidden" + i + ".pddl";
 			System.out.println("Problem real: " + hidden);
 			parseHidden(path + hidden);
 			
@@ -292,11 +292,11 @@ public class Planner {
 			    		isFirst = false;
 			    	}else{
 			    		if(aux.startsWith("~")){
-			    			a.Name = counter + "deduct-not-" + aux.substring(1);
+			    			a.Name = counter + "-deduct-not-" + aux.substring(1);
 			    			a._Negative_effects.add(aux.substring(1));
 			    		}
 			    		else{
-			    			a.Name = counter + "deduct-" + aux;
+			    			a.Name = counter + "-deduct-" + aux;
 			    			a._Positive_effects.add(aux);
 			    		}
 			    		
@@ -308,6 +308,7 @@ public class Planner {
 			    	
 			    }
 			    //a._Positive_effects.add("lock");
+			    a.deductive_action = true;
 			    domain.list_actions.put(a.Name, a);
 			    counter++;
 			}			
@@ -336,7 +337,7 @@ public class Planner {
 			    		else{
 			    			aux = "~" + aux;
 			    		}
-			    		a.Name = "Not-" + aux.replace("~", "");
+			    		a.Name = "not-" + aux.replace("~", "");
 			    		a._precond.add(aux);
 			    		isFirst = false;
 			    	}else{
@@ -345,12 +346,13 @@ public class Planner {
 			    			a._Negative_effects.add(aux.substring(1));
 			    		}
 			    		else{
-			    			a.Name = "Stench-" + aux;
+			    			a.Name = "stench-" + aux;
 			    			a._Positive_effects.add(aux);
 			    		}
 			    	}
 			    }
 			    //a._Positive_effects.add("lock");
+			    a.deductive_action = true;
 			    domain.list_actions.put(a.Name, a);
 			}			
 		}		
@@ -384,6 +386,8 @@ public class Planner {
 			    	}
 			    }
 			    //a._Positive_effects.add("lock");
+			    a.deductive_action = true;
+			    a_opposed.deductive_action = true;
 			    domain.list_actions.put(a.Name, a);
 			    domain.list_actions.put(a_opposed.Name, a_opposed);
 			}			

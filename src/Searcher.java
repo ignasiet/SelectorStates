@@ -71,7 +71,7 @@ public class Searcher {
 		//System.out.println("Path created.");
 	}
 	
-	private void printSolution() {		
+	private void printSolution() {
 		TreeNode last_node = new TreeNode("root");
 		for(ArrayList<SearchNode> path : solution_path){
 			if(!solutionTree.hasRoot()){
@@ -80,9 +80,13 @@ public class Searcher {
 				last_node = solutionTree.root;
 			}
 			for(SearchNode nodeTreated : path){
+				//System.out.println(last_node.name);
 				if(!last_node.name.equals(nodeTreated.generatedBy.Name)){
 					if(!last_node.hasChild(nodeTreated.generatedBy.Name)){
 						TreeNode tNode = new TreeNode(nodeTreated.generatedBy.Name);
+						if(last_node.left_sucessor != null && last_node.right_sucessor != null){
+							//System.out.println(last_node.name);
+						}
 						last_node.addNode(tNode);
 						last_node = tNode;
 					}else{
@@ -93,7 +97,7 @@ public class Searcher {
 			}
 		}
 		System.out.println("Path created.");
-		solutionTree.printTree();
+		solutionTree.printTree(domain_translated.list_actions);
 	}
 
 	public void aStarSearch(Queue<SearchNode> fringe){
@@ -179,14 +183,15 @@ public class Searcher {
 			if(node_plan.isObservationNode){
 				if(!observations_made.containsKey(node_plan.generatedBy.Name)){
 					observations_made.put(node_plan.generatedBy.Name, 1);
-					//Create the 2 observations:
-					ArrayList<SearchNode> list_transformed = node_plan.transformObservation(node_plan.generatedBy);
-					for(SearchNode node_trans : list_transformed){
-						node_trans = calculateHeuristic(node_trans);
-						nodes_toReplan.add(node_trans);
-					}
 					discardPlan = true;
 				}
+				//Create the 2 observations:
+				ArrayList<SearchNode> list_transformed = node_plan.transformObservation(node_plan.generatedBy);
+				for(SearchNode node_trans : list_transformed){
+					node_trans = calculateHeuristic(node_trans);
+					nodes_toReplan.add(node_trans);
+				}
+				//discardPlan = true;
 			}
 			path.add(0, node_plan);
 			String action_done = node_plan.generatedBy.Name;			

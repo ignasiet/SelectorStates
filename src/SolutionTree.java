@@ -29,7 +29,7 @@ public class SolutionTree {
 		}
 	}
 	
-	public void printTree(){
+	public void printTree(Hashtable<String, AbstractAction> list_actions){
 		TreeNode used_node = root;
 		stack_nodes.push(used_node);
 		while(!stack_nodes.isEmpty()){
@@ -37,7 +37,10 @@ public class SolutionTree {
 			if(observations.containsKey(used_node.name)){
 				System.out.println(observations.get(used_node.name) + " {");
 			}
-			System.out.println(used_node.name);
+			AbstractAction act = list_actions.get(used_node.name);
+			if(act != null && act.deductive_action == false){
+				System.out.println(used_node.name);
+			}
 			if(used_node.right_sucessor != null){
 				System.out.println("If observation = ");
 				stack_nodes.push(used_node.right_sucessor);
@@ -56,14 +59,33 @@ public class SolutionTree {
 
 	public void put_observation(String _applyAction, String observation_divisor) {
 		observations.put(_applyAction, observation_divisor);
-		observations_reversed.put(observation_divisor, _applyAction);
+		if(!observations_reversed.containsKey(observation_divisor)){
+			observations_reversed.put(observation_divisor, _applyAction);
+		}else{
+			String auxString = observations_reversed.get(observation_divisor);
+			if(!auxString.equals(_applyAction)){
+				auxString = auxString + ";" + _applyAction;
+				observations_reversed.put(observation_divisor, auxString);
+			}
+		}
+		
 	}
 	
 
 	
 	public TreeNode getObservationNode(TreeNode tNode, String observation){
 		String next = observations_reversed.get("K" + observation);
-		return tNode.getChildren(next);
+		if(next.contains(";")){
+			String[] observationChildren = next.split(";");
+			for(String child : observationChildren){
+				if(tNode.getChildren(child) != null){
+					return tNode.getChildren(child);
+				}
+			}
+		}else{
+			return tNode.getChildren(next);
+		}
+		return null;
 	}
 
 }

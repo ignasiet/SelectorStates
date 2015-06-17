@@ -43,6 +43,7 @@ public class Translator {
 					a._precond.add("K~" + p_opposed);
 				}
 			}
+			a.deductive_action = true;
 			domain_translated.list_actions.put(a.Name, a);
 		}
 	}
@@ -109,6 +110,9 @@ public class Translator {
 					}
 					a_translated._Negative_effects.add("~K" + negat_effect);
 					a_translated._Positive_effects.add("K~" + negat_effect);
+				}
+				if(a.deductive_action){
+					a_translated.deductive_action = true;
 				}
 				domain_translated.list_actions.put(a_translated.Name, a_translated);
 			}
