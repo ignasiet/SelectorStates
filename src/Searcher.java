@@ -97,7 +97,7 @@ public class Searcher {
 			}
 		}
 		System.out.println("Path created.");
-		solutionTree.printTree(domain_translated.list_actions);
+		//solutionTree.printTree(domain_translated.list_actions);
 	}
 
 	public void aStarSearch(Queue<SearchNode> fringe){

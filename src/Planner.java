@@ -20,30 +20,29 @@ public class Planner {
 	
 	public static void startPlanner(){
 		
-		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
+/*		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
 		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
 		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
-		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";
-/*		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
+		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";*/
+		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
 		String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
 		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/";
-		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";*/
+		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
 		boolean success = false;
 		init();
 		domain.ground_all_actions();
 		//System.out.println("Done grounding.");
 		//String problem = "pW" + randInt(1, 7) + ".pddl";
-		String problem = "pW1Hard.pddl";
+		String problem = "pW0-2States7.pddl";
 		System.out.println("Printing");
 		Printer.Printer(domain);
 		for(int i = 1;i < 2;i++){
 			parseInit(path + problem);
-			String hidden = "hidden6.pddl";
+			String hidden = "hidden7.pddl";
 			//System.out.println("Done parsing initial state.");
 			//String hidden = "hidden" + i + ".pddl";
 			System.out.println("Problem real: " + hidden);
-			parseHidden(path + hidden);
-			
+			parseHidden(path + hidden);			
 			domain.getInvariantPredicates();
 			domain.eliminateInvalidActions();
 			Translator tr = new Translator(domain);
@@ -68,34 +67,6 @@ public class Planner {
 					System.out.println("Time: " + (endTime - startTime) + " Milliseconds");
 				}				
 			}
-			
-			
-			/*createPlan(path_planner, path_problem);
-			plan.clear();
-			loadPlan(path_Plan);
-			while(!success){
-				if(!testPlan()){
-					//System.out.println("Need to replan!");
-					//System.out.println("Printing");
-					System.out.println("FAIL! -> Replanning");
-					System.out.println("Number of actions executed: " + actions_executed);
-					System.out.println("Number of actions left: " + actions_left);
-					Printer.Printer(domain);
-					createPlan(path_planner, path_problem);
-					num_replans++;
-					plan.clear();
-					loadPlan(path_Plan);
-				}else{
-					success = true;
-					System.out.println("Success!!!!");
-					System.out.println("Number of replans: " + num_replans);
-					System.out.println("Number of actions executed: " + actions_executed);
-					System.out.println("Number of actions left: " + actions_left);
-				}
-			}
-			//Restart!
-			success = false;
-			actions_executed = 0;*/
 		}
 	}
 	
@@ -143,8 +114,7 @@ public class Planner {
 				String observation = domain.sensingAction(action_node.name);
 				System.out.println("Observed: " + observation);
 				action_node = treePlan.getObservationNode(action_node, observation);
-			}else{
-				System.out.println("Executing: " + action_node.name);
+			}else{				
 				if(domain.applyAction(action_node.name)){
 					actions_executed++;
 					actions_left--;

@@ -291,6 +291,9 @@ public class Domain {
 			return true;
 		}else{
 			AbstractAction a = list_actions.get(action_name.toLowerCase());
+			if(!a.deductive_action){
+				System.out.println("Executing: " + action_name);
+			}
 			if(isActionApplicable(a) && isActionReallyApplicable(a)){
 				applyEffects(a);
 				return true;
@@ -299,8 +302,7 @@ public class Domain {
 				getInfosBeforeReplanning(a);
 				return false;
 			}
-		}
-		
+		}		
 	}
 	
 	public String sensingAction(String action_name){
