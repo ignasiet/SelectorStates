@@ -293,6 +293,8 @@ public class Domain {
 			AbstractAction a = list_actions.get(action_name.toLowerCase());
 			if(!a.deductive_action){
 				System.out.println("Executing: " + action_name);
+			}else{
+				System.out.println("Deducting: " + action_name);
 			}
 			if(isActionApplicable(a) && isActionReallyApplicable(a)){
 				applyEffects(a);
@@ -314,8 +316,13 @@ public class Domain {
 		}else{
 			observation = "~" + predicate_observed;
 		}
-		state.put(observation, 1);
-		hidden_state.put(observation, 1);
+		if(observation.startsWith("~")){
+			state.remove(observation.substring(1));
+			hidden_state.remove(observation.substring(1));
+		}else{
+			state.put(observation, 1);
+			hidden_state.put(observation, 1);
+		}		
 		return observation;
 	}
 	

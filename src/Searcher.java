@@ -1,3 +1,6 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -31,6 +34,10 @@ public class Searcher {
 		return solutionTree;
 	}
 	
+	public void clearHash(){
+		_VisitedNodes = new Hashtable<Hashtable<String, Integer>, Integer>();
+	}
+	
 	private Queue<SearchNode> initFringe(){
 		//init Priority queue
 		PriorityQueue<SearchNode> fringe = new PriorityQueue<SearchNode>(nMax, 
@@ -46,6 +53,8 @@ public class Searcher {
 		//Add initial state with heuristic to the fringe
 		domain_translated = domain;
 		SearchNode initialState = new SearchNode(domain.state);
+		initialState._ActionsApplied = new Hashtable<String, Integer>();
+		//debuggerTester(initialState);
 		graphplanner gp = new graphplanner(initialState.getState(), domain.list_actions, domain.goalState);
 		if(!gp.fail){
 			initialState.heuristicValue = gp.heuristicValue();
@@ -57,19 +66,40 @@ public class Searcher {
 		}
 	}
 	
+	public void replan(Domain domain, Hashtable<String, Integer> _actionsApplied, Hashtable<String, Integer> observations){
+		//Add initial state with heuristic to the fringe
+		domain_translated = domain;
+		SearchNode initialState = new SearchNode(domain.state);
+		observations_made = observations;
+		//debuggerTester(initialState);
+		graphplanner gp = new graphplanner(initialState.getState(), domain.list_actions, domain.goalState);
+		if(!gp.fail){
+			initialState.heuristicValue = gp.heuristicValue();
+			initialState.fCost = initialState.heuristicValue + initialState.pathCost;
+			Queue<SearchNode> fringe = initFringe();
+			initialState._ActionsApplied = new Hashtable<String, Integer>(_actionsApplied);
+			fringe.add(initialState);
+			searcherContingentPlan(fringe, domain);
+		}
+	}
+	
 	public void searcherContingentPlan(Queue<SearchNode> fringe, Domain domain){
 		aStarSearch(fringe);
+		_VisitedNodes.clear();
 		while(!nodes_toReplan.isEmpty()){
 			SearchNode node_r = nodes_toReplan.get(0);
 			nodes_toReplan.remove(0);
 			fringe.clear();
 			fringe.add(node_r);
+			//_VisitedNodes.clear();
 			aStarSearch(fringe);
 		}
 		System.out.println("Number of solutions found: " + solution_nodes.size());
 		printSolution();
 		//System.out.println("Path created.");
 	}
+	
+	
 	
 	private void printSolution() {
 		TreeNode last_node = new TreeNode("root");
@@ -99,6 +129,31 @@ public class Searcher {
 		System.out.println("Path created.");
 		//solutionTree.printTree(domain_translated.list_actions);
 	}
+	
+	public void debuggerTester(SearchNode node){
+		while(!goalTest(node)){
+			System.out.println("Choose action (wisely!): ");
+			ArrayList<AbstractAction> applicable_action_list = matchApplicableActions(node);
+			ArrayList<SearchNode> list_states = new ArrayList<SearchNode>();
+			int i = 0;
+			for(AbstractAction action : applicable_action_list){
+				SearchNode node_created = expand(node, action);
+				list_states.add(i, node_created);
+				System.out.println(i + " Action: " + action.Name + " Heuristic: " + node_created.heuristicValue + " Fvalue: " + node_created.fCost);
+				i++;
+			}
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+	        String input;
+			try {
+				input = bufferedReader.readLine();
+				int number = Integer.parseInt(input);
+				node = list_states.get(number);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	        
+		}
+	}
 
 	public void aStarSearch(Queue<SearchNode> fringe){
 		Hashtable<String, Integer> Actions_in_fringe = new Hashtable<String, Integer>();
@@ -113,6 +168,8 @@ public class Searcher {
 			if(!_VisitedNodes.containsKey(node.state)){
 				_VisitedNodes.put(node.state, 1);
 			}else{
+				//System.out.println("Visited State!");
+				//System.out.println("Number of states: " + _VisitedNodes.get(node.state));
 				continue;
 			}
 			//If node is Goal, return Path
@@ -184,13 +241,19 @@ public class Searcher {
 				if(!observations_made.containsKey(node_plan.generatedBy.Name)){
 					observations_made.put(node_plan.generatedBy.Name, 1);
 					discardPlan = true;
+					//Create the 2 observations:
+					ArrayList<SearchNode> list_transformed = node_plan.transformObservation(node_plan.generatedBy);
+					for(SearchNode node_trans : list_transformed){
+						node_trans = calculateHeuristic(node_trans);
+						nodes_toReplan.add(node_trans);
+					}
 				}
 				//Create the 2 observations:
-				ArrayList<SearchNode> list_transformed = node_plan.transformObservation(node_plan.generatedBy);
+				/*ArrayList<SearchNode> list_transformed = node_plan.transformObservation(node_plan.generatedBy);
 				for(SearchNode node_trans : list_transformed){
 					node_trans = calculateHeuristic(node_trans);
 					nodes_toReplan.add(node_trans);
-				}
+				}*/
 				//discardPlan = true;
 			}
 			path.add(0, node_plan);
