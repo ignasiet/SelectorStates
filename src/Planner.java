@@ -22,67 +22,80 @@ public class Planner {
 	private static Hashtable<String, Integer> observations_Hash = new Hashtable<String, Integer>();
 	
 	public static void startPlanner(){
-		
-		String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
+
+		/*String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
 		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
 		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
-		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";
-/*		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
+		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";*/
+		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
 		String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
 		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/";
-		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";*/
-		boolean success = false;
+		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
+		
 		init();
 		domain.ground_all_actions();
 		//System.out.println("Done grounding.");
 		//String problem = "pW" + randInt(1, 7) + ".pddl";
-		String problem = "pW7-14States1.pddl";
+		String problem = "pW10-2States1.pddl";
 		//System.out.println("Printing");
 		//Printer.Printer(domain);
-		for(int i = 1;i < 2;i++){
-			parseInit(path + problem);
-			String hidden = "hidden10Complete7.pddl";
-			//System.out.println("Done parsing initial state.");
-			//String hidden = "hidden" + i + ".pddl";
-			System.out.println("Problem real: " + hidden);
-			parseHidden(path + hidden);			
-			domain.getInvariantPredicates();
-			domain.eliminateInvalidActions();
-			long startTime = System.currentTimeMillis();
-			Translator tr = new Translator(domain);
-			long endTime = System.currentTimeMillis();
-			System.out.println("Translation time: " + (endTime - startTime) + " Milliseconds");
-			System.out.println(domain.predicates_grounded.size() + " " + tr.domain_translated.predicates_grounded.size());
-			//Printer.Printer(tr.domain_translated);
-			/*Searcher aStar = new Searcher();
-			startTime = System.currentTimeMillis();
-			aStar.searchPlan(tr.domain_translated);
-			endTime = System.currentTimeMillis();
-			System.out.println("Time: " + (endTime - startTime) + " Milliseconds");
-			
-			while(!success){
-				_actionsApplied.clear();
-				observations_Hash.clear();
-				if(tryPlan(aStar.getSolution())){
-					success = true;
-					System.out.println("Success!!!!");
-				}else{
-					System.out.println("Need to replan!");
-					startTime = System.currentTimeMillis();
-					tr = new Translator(domain);
-					endTime = System.currentTimeMillis();
-					System.out.println("Translation time: " + (endTime - startTime) + " Milliseconds");
-					aStar = new Searcher();
-					startTime = System.currentTimeMillis();
-					aStar.clearHash();
-					aStar.replan(tr.domain_translated, _actionsApplied, observations_Hash);
-					endTime = System.currentTimeMillis();
-					System.out.println("Time: " + (endTime - startTime) + " Milliseconds");
-				}				
-			}*/
+		parseInit(path + problem);
+		String hidden = "hidden10Complete7.pddl";
+		//System.out.println("Done parsing initial state.");
+		//String hidden = "hidden" + i + ".pddl";
+		System.out.println("Problem real: " + hidden);
+		parseHidden(path + hidden);	
+		
+		/*Process entry*/
+		domain.getInvariantPredicates();
+		domain.eliminateInvalidActions();
+		
+		/*Time measure: translation*/
+		long startTime = System.currentTimeMillis();
+		Translator tr = new Translator(domain);
+		long endTime = System.currentTimeMillis();
+		System.out.println("Translation time: " + (endTime - startTime) + " Milliseconds");
+		
+		/*Size measure*/
+		//System.out.println(domain.predicates_grounded.size() + " " + tr.domain_translated.predicates_grounded.size());
+		//Printer.Printer(tr.domain_translated);
+		Searcher aStar = new Searcher();
+		
+		/*Time measure: search*/
+		startTime = System.currentTimeMillis();
+		aStar.searchPlan(tr.domain_translated);
+		endTime = System.currentTimeMillis();
+		System.out.println("Time: " + (endTime - startTime) + " Milliseconds");
+
+		/*Execute and verify plan*/
+		executor(aStar);
+		
+	}
+
+	private static void executor(Searcher aStar){
+		boolean success = false;
+		while(!success){
+			_actionsApplied.clear();
+			observations_Hash.clear();
+			if(tryPlan(aStar.getSolution())){
+				success = true;
+				System.out.println("Success!!!!");
+			}else{
+				System.out.println("Need to replan!");
+				long startTime = System.currentTimeMillis();
+				Translator tr = new Translator(domain);
+				long endTime = System.currentTimeMillis();
+				System.out.println("Translation time: " + (endTime - startTime) + " Milliseconds");
+				aStar = new Searcher();
+				startTime = System.currentTimeMillis();
+				aStar.clearHash();
+				aStar.replan(tr.domain_translated, _actionsApplied, observations_Hash);
+				endTime = System.currentTimeMillis();
+				System.out.println("Time: " + (endTime - startTime) + " Milliseconds");
+			}
 		}
 	}
-	
+		
 	public static int randInt(int min, int max) {
 	    // NOTE: Usually this should be a field rather than a method
 	    // variable so that it is not re-seeded every call.

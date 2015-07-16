@@ -97,11 +97,10 @@ public class Searcher {
 		System.out.println("Number of solutions found: " + solution_nodes.size());
 		printSolution();
 		//System.out.println("Path created.");
-	}
-	
-	
+	}	
 	
 	private void printSolution() {
+		String next_son = "";
 		TreeNode last_node = new TreeNode("root");
 		for(ArrayList<SearchNode> path : solution_path){
 			if(!solutionTree.hasRoot()){
@@ -114,14 +113,24 @@ public class Searcher {
 				if(!last_node.name.equals(nodeTreated.generatedBy.Name)){
 					if(!last_node.hasChild(nodeTreated.generatedBy.Name)){
 						TreeNode tNode = new TreeNode(nodeTreated.generatedBy.Name);
-						if(last_node.left_sucessor != null && last_node.right_sucessor != null){
+						/*if(last_node.left_sucessor != null && last_node.right_sucessor != null){
 							//System.out.println(last_node.name);
-						}
-						last_node.addNode(tNode);
+						}*/
+						last_node.addNode(tNode, next_son);
+						next_son = "";
 						last_node = tNode;
 					}else{
 						TreeNode tNode = last_node.getChildren(nodeTreated.generatedBy.Name);
 						last_node = tNode;
+					}
+				}
+				else{
+					//System.out.println("Divisor: " + nodeTreated.observation_divisor);
+					if(nodeTreated.observation_divisor.contains("~")){
+						next_son = "right";
+					}
+					else{
+						next_son = "left";
 					}
 				}
 			}
