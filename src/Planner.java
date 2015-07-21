@@ -36,11 +36,11 @@ public class Planner {
 		domain.ground_all_actions();
 		//System.out.println("Done grounding.");
 		//String problem = "pW" + randInt(1, 7) + ".pddl";
-		String problem = "pW10-2States1.pddl";
+		String problem = "pW5-2States1.pddl";
 		//System.out.println("Printing");
 		//Printer.Printer(domain);
 		parseInit(path + problem);
-		String hidden = "hidden10Complete7.pddl";
+		String hidden = "hidden5Complete7.pddl";
 		//System.out.println("Done parsing initial state.");
 		//String hidden = "hidden" + i + ".pddl";
 		System.out.println("Problem real: " + hidden);
@@ -59,17 +59,19 @@ public class Planner {
 		/*Size measure*/
 		//System.out.println(domain.predicates_grounded.size() + " " + tr.domain_translated.predicates_grounded.size());
 		//Printer.Printer(tr.domain_translated);
-		Searcher aStar = new Searcher();
+		//Searcher aStar = new Searcher();
+		
+		/*Get landmarks*/
+		Landmarker lm = new Landmarker(domain.state, domain.list_actions, domain.goalState, domain.predicates_invariants);
 		
 		/*Time measure: search*/
 		startTime = System.currentTimeMillis();
-		aStar.searchPlan(tr.domain_translated);
+		//aStar.searchPlan(tr.domain_translated);
 		endTime = System.currentTimeMillis();
 		System.out.println("Time: " + (endTime - startTime) + " Milliseconds");
 
 		/*Execute and verify plan*/
-		executor(aStar);
-		
+		//executor(aStar);		
 	}
 
 	private static void executor(Searcher aStar){
