@@ -11,6 +11,9 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import readers.ExprList;
+import readers.PDDLParser.Expr;
+
 
 public class Planner {
 	public static Domain domain = new Domain();
@@ -29,10 +32,10 @@ public class Planner {
 		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";*/
 		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
 		String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
-		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/";
+		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/Dominios/";
 		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
 		
-		init();
+		domain = initParsing(path_problem + "dW.pddl");
 		domain.ground_all_actions();
 		//System.out.println("Done grounding.");
 		//String problem = "pW" + randInt(1, 7) + ".pddl";
@@ -198,6 +201,12 @@ public class Planner {
 		}
 	}
 
+	private static Domain initParsing(String path){
+		Parser p = new Parser(path);		
+		Domain domain_completed = p.getDomain();
+		return domain_completed;
+	}
+	
 	private static void init() {
 		domain.Name = "wumpus";
 		domain.ProblemInstance = "wumpus-5";

@@ -164,6 +164,7 @@ public class Domain {
 		}
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void ground_actions(Action action){
 		ArrayList<String> result = new ArrayList<String>();
 		//Hashtable<String, String> substitution = new Hashtable<String, String>();
