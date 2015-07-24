@@ -11,6 +11,8 @@ public class Action extends AbstractAction{
 	public Hashtable<String, ArrayList<String>> action_parameters = new Hashtable<String, ArrayList<String>>();
 	public Hashtable<String, String> parameters_type = new Hashtable<String, String>();
 	public ArrayList<String> _parameters = new ArrayList<String>();
+	public ArrayList<Effect> _Effects = new ArrayList<Effect>();
+	public String combination;
 
 	public Action(){
 		_precond = new ArrayList<String>();

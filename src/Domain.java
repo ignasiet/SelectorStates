@@ -164,7 +164,7 @@ public class Domain {
 		}
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked", "rawtypes", "unused" })
 	public void ground_actions(Action action){
 		ArrayList<String> result = new ArrayList<String>();
 		//Hashtable<String, String> substitution = new Hashtable<String, String>();
@@ -180,6 +180,7 @@ public class Domain {
 			if(action.IsObservation){
 				act_grounded.IsObservation = true;
 			}
+			act_grounded.combination = combination;
 			act_grounded.Name = action.Name + "_" + combination.replace(";", "_");
 			ArrayList<String> lista_objetos = new ArrayList<String>(Arrays.asList(combination.split(";")));
 			int i = 0;
@@ -221,8 +222,30 @@ public class Domain {
 			act_grounded._Negative_effects = lista_efeitos_negativos;
 			act_grounded._precond = lista_precond;
 			if(validAction){
+				if(action._IsConditionalEffect){
+					act_grounded._Effects.addAll(action._Effects);
+					act_grounded._IsConditionalEffect = true;
+					act_grounded._parameters.addAll(action._parameters);
+					groundEffects(act_grounded);
+				}
 				list_actions.put(act_grounded.Name, act_grounded);
 			}
+		}
+	}
+	
+	private void groundEffects(Action act_grounded){
+		ArrayList<String> lista_objetos = new ArrayList<String>(Arrays.asList(act_grounded.combination.split(";")));
+		int i = 0;
+		for(String parameter : act_grounded._parameters){
+			for(Effect in : act_grounded._Effects){
+				for(String condition : in._Condition){
+					condition = condition.replace(parameter, lista_objetos.get(i));
+				}
+				for(String effect : in._Effects){
+					effect = effect.replace(parameter, lista_objetos.get(i));
+				}
+			}
+			i++;
 		}
 	}
 	
@@ -260,6 +283,23 @@ public class Domain {
 	    	state.put(auxString, 1);
 	    }
 	    //state.put("lock", 1);
+	}
+	
+	public void addInitialPredicate(String initial_state){
+		if(initial_state.contains("(oneof")){
+			int index_oneof = initial_state.indexOf("(oneof") + 6;
+			String oneof_string = initial_state.substring(index_oneof);
+			Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(oneof_string);
+		    while(m.find()) {
+		    	String aux = Planner.cleanString(m.group(1));
+		    	predicates_uncertain.add(aux);
+		    }
+		    initial_state = initial_state.substring(0, index_oneof);
+		    addDeductiveOneOfAction();
+		}else{
+			String auxString = Planner.cleanString(initial_state);
+			state.put(auxString, 1);
+		}
 	}
 	
 	private void addDeductiveOneOfAction() {
