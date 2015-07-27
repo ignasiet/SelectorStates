@@ -1,8 +1,0 @@
-/**
- * 
- */
-/**
- * @author ignasi
- *
- */
-package parsing;
