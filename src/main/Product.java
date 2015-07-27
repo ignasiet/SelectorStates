@@ -1,8 +1,12 @@
+package main;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
+
+import pddlElements.Action;
+import planner.Planner;
 
 
 public class Product {

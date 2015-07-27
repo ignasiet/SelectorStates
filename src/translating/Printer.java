@@ -1,9 +1,13 @@
+package translating;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+
+import pddlElements.Action;
+import pddlElements.Domain;
 
 public class Printer {
 
@@ -82,7 +86,7 @@ public class Printer {
 		String auxStr = "";
 		Enumeration e = domain.list_actions.keys();
 		while(e.hasMoreElements()){
-			AbstractAction action = domain.list_actions.get(e.nextElement().toString());
+			Action action = domain.list_actions.get(e.nextElement().toString());
 			auxStr = auxStr + "\n(:action " + action.Name;
 			auxStr = auxStr + "\n:precondition ";
 			if(action._precond.size()>1){

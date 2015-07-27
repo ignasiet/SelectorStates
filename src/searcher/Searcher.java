@@ -1,13 +1,18 @@
+package searcher;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.LinkedList;
 import java.util.PriorityQueue;
-import java.util.Comparator;
 import java.util.Queue;
+
+import pddlElements.Action;
+import pddlElements.Domain;
+import planner.graphplanner;
+
 
 /**
  * @author Ignasi
@@ -142,10 +147,10 @@ public class Searcher {
 	public void debuggerTester(SearchNode node){
 		while(!goalTest(node)){
 			System.out.println("Choose action (wisely!): ");
-			ArrayList<AbstractAction> applicable_action_list = matchApplicableActions(node);
+			ArrayList<Action> applicable_action_list = matchApplicableActions(node);
 			ArrayList<SearchNode> list_states = new ArrayList<SearchNode>();
 			int i = 0;
-			for(AbstractAction action : applicable_action_list){
+			for(Action action : applicable_action_list){
 				SearchNode node_created = expand(node, action);
 				list_states.add(i, node_created);
 				System.out.println(i + " Action: " + action.Name + " Heuristic: " + node_created.heuristicValue + " Fvalue: " + node_created.fCost);
@@ -188,8 +193,8 @@ public class Searcher {
 				break;
 			}
 			//Else expand node
-			ArrayList<AbstractAction> applicable_action_list = matchApplicableActions(node);			
-			for(AbstractAction action : applicable_action_list){
+			ArrayList<Action> applicable_action_list = matchApplicableActions(node);			
+			for(Action action : applicable_action_list){
 				_GeneratedNodes++;
 				//not expand what it is in the fringe
 				if(!Actions_in_fringe.containsKey(action.Name)){
@@ -213,11 +218,11 @@ public class Searcher {
 		}
 	}
 	
-	private ArrayList<AbstractAction> matchApplicableActions(SearchNode node){
-		ArrayList<AbstractAction> return_list = new ArrayList<AbstractAction>();
+	private ArrayList<Action> matchApplicableActions(SearchNode node){
+		ArrayList<Action> return_list = new ArrayList<Action>();
 		Enumeration<String> e = domain_translated.list_actions.keys();
 		while(e.hasMoreElements()){
-			AbstractAction a = domain_translated.list_actions.get(e.nextElement().toString());
+			Action a = domain_translated.list_actions.get(e.nextElement().toString());
 			if(node.canApply(a)){
 				return_list.add(a);
 			}
@@ -225,7 +230,7 @@ public class Searcher {
 		return return_list;
 	}
 	
-	private SearchNode expand(SearchNode node, AbstractAction a) {
+	private SearchNode expand(SearchNode node, Action a) {
 		SearchNode node_sucessor = node.applyAction(a);
 			if(node_sucessor != null){
 			graphplanner gp = new graphplanner(node_sucessor.getState(), domain_translated.list_actions, domain_translated.goalState);

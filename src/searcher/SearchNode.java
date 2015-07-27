@@ -1,5 +1,8 @@
+package searcher;
 import java.util.ArrayList;
 import java.util.Hashtable;
+
+import pddlElements.Action;
 
 /**
  * 
@@ -16,7 +19,7 @@ public class SearchNode {
 	public int heuristicValue;
 	public int pathCost = 0;
 	public int fCost = 0;
-	public AbstractAction generatedBy = null;
+	public Action generatedBy = null;
 	public String _applyAction;
 	public SearchNode Parent_node = null;
 	public boolean isObservationNode = false;
@@ -35,7 +38,7 @@ public class SearchNode {
 		return state.containsKey(predicate);
 	}
 
-	public boolean canApply(AbstractAction a) {
+	public boolean canApply(Action a) {
 		for(String precondition : a._precond){
 			if(!state.containsKey(precondition)){
 				return false;
@@ -44,7 +47,7 @@ public class SearchNode {
 		return true;
 	}
 
-	public SearchNode applyAction(AbstractAction a) {
+	public SearchNode applyAction(Action a) {
 		SearchNode node_sucessor = new SearchNode(state);
 		if(a.IsObservation){
 			node_sucessor.isObservationNode = true;
@@ -68,7 +71,7 @@ public class SearchNode {
 		return node_sucessor;
 	}
 	
-	public ArrayList<SearchNode> expandObservation(AbstractAction a){
+	public ArrayList<SearchNode> expandObservation(Action a){
 		ArrayList<SearchNode> list_return = new ArrayList<SearchNode>();
 		//Node 1
 		SearchNode node_sucessor_positive = new SearchNode(state);
@@ -101,7 +104,7 @@ public class SearchNode {
 		return list_return;
 	}
 
- 	public ArrayList<SearchNode> transformObservation(AbstractAction a) {
+ 	public ArrayList<SearchNode> transformObservation(Action a) {
 		SearchNode node_sucessor_positive = new SearchNode(state);
 		SearchNode node_sucessor_negative = new SearchNode(state);
 		node_sucessor_positive.generatedBy = a;

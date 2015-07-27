@@ -1,3 +1,4 @@
+package planner;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,8 +12,17 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import parsing.Parser;
+import pddlElements.Action;
+import pddlElements.Domain;
 import readers.ExprList;
 import readers.PDDLParser.Expr;
+import searcher.Searcher;
+import searcher.SolutionTree;
+import searcher.TreeNode;
+import translating.Translator;
+import landmarker.*;
+import pddlElements.*;
 
 
 public class Planner {

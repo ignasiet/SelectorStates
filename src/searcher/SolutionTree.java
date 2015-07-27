@@ -1,6 +1,8 @@
-import java.util.ArrayList;
+package searcher;
 import java.util.Hashtable;
 import java.util.Stack;
+
+import pddlElements.Action;
 
 
 public class SolutionTree {
@@ -29,7 +31,7 @@ public class SolutionTree {
 		}
 	}
 	
-	public void printTree(Hashtable<String, AbstractAction> list_actions){
+	public void printTree(Hashtable<String, Action> list_actions){
 		TreeNode used_node = root;
 		stack_nodes.push(used_node);
 		while(!stack_nodes.isEmpty()){
@@ -37,7 +39,7 @@ public class SolutionTree {
 			if(observations.containsKey(used_node.name)){
 				System.out.println(observations.get(used_node.name) + " {");
 			}
-			AbstractAction act = list_actions.get(used_node.name);
+			Action act = list_actions.get(used_node.name);
 			if(act != null && act.deductive_action == false){
 				System.out.println(used_node.name);
 			}

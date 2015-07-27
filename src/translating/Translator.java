@@ -1,6 +1,10 @@
+package translating;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+
+import pddlElements.Action;
+import pddlElements.Domain;
 
 /**
  * @author ignasi
@@ -14,7 +18,7 @@ public class Translator {
 	protected Hashtable<String,String> _Tags = new Hashtable<String,String>();
 	private ArrayList<String> _TagList = new ArrayList<String>();
 	protected ArrayList<String> predicates_opposed;
-	protected Domain domain_translated = new Domain();
+	public Domain domain_translated = new Domain();
 	
 	public Translator(Domain domain_to_translate) {
 		// 1 - Translate predicates (all)
@@ -77,10 +81,10 @@ public class Translator {
 		}
 	}
 
-	private void translateActions(Hashtable<String, AbstractAction> list_actions) {
+	private void translateActions(Hashtable<String, Action> list_actions) {
 		Enumeration e = list_actions.keys();
 		while(e.hasMoreElements()){
-			AbstractAction a = list_actions.get(e.nextElement().toString());
+			Action a = list_actions.get(e.nextElement().toString());
 			if(a.IsObservation){
 				Action a_translated = new Action();
 				a_translated.IsObservation = true;

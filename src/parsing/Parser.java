@@ -1,8 +1,12 @@
+package parsing;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Iterator;
 import java.util.Scanner;
 
+import pddlElements.Action;
+import pddlElements.Domain;
+import pddlElements.Effect;
 import readers.Atom;
 import readers.ExprList;
 import readers.PDDLParser;
