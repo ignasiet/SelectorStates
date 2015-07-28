@@ -4,6 +4,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
+
 import pddlElements.*;
 /**
  * 
@@ -262,8 +263,10 @@ public class Landmarker {
 	public void initActionList(){
 		Enumeration enumerator_actions = _Actions.keys();
 		while(enumerator_actions.hasMoreElements()){
-			_Actions_list.add(enumerator_actions.nextElement().toString());
-		}		
+			String aName = enumerator_actions.nextElement().toString();
+			//System.out.println(aName);
+			_Actions_list.add(aName);
+		}
 	}
 	
 	public boolean isGoal(StepLandmark predicates){
@@ -330,7 +333,8 @@ public class Landmarker {
 				}
 				for(String effect : a._Positive_effects){					
 					//Verify if the node already exists
-					if(PredicateStep.Contains(effect)){
+					addEffect(PredicateStep, effect, no);
+					/*if(PredicateStep.Contains(effect)){
 						PredicateStep.updateParentNode(effect, no);
 					}else{
 						NodeLandmark node_effect = new NodeLandmark(effect);
@@ -343,12 +347,18 @@ public class Landmarker {
 							//ActionStep.updateSuccessorNode(action_name, node_effect);
 							PredicateStep.updateParentNode(effect, no);
 						}
-					}
+					}*/
 				}
-				//If is a conditional effect: 
+				//If is a contains conditional effect: 
 				if(a._IsConditionalEffect){
 					//Verify effects can be applied
-					
+					for(Effect e : a._Effects){
+						if(isEffectApplicable(e, predicates_list)){
+							for(String eff : e._Effects){
+								addEffect(PredicateStep, eff, no);
+							}
+						}
+					}
 				}
 			}
 		}
@@ -359,6 +369,34 @@ public class Landmarker {
 		last_layer = ActionStep.step;
 	}
 	
+	private void addEffect(StepLandmark PredicateStep, String effect, NodeLandmark no){
+		//Verify if the node already exists
+		if(PredicateStep.Contains(effect)){
+			PredicateStep.updateParentNode(effect, no);
+		}else{
+			NodeLandmark node_effect = new NodeLandmark(effect);
+			if(node_effect.level > PredicateStep.step){
+				node_effect.level = PredicateStep.step;
+				if(!_GoalsAchieved.containsKey(node_effect.predicate)){
+					_GoalsAchieved.put(node_effect.predicate, PredicateStep.step);
+				}
+				PredicateStep.addNode(node_effect);
+				//ActionStep.updateSuccessorNode(action_name, node_effect);
+				PredicateStep.updateParentNode(effect, no);
+			}
+		}
+	}
+	
+	/**Verify if the effect is applicable*/
+	private boolean isEffectApplicable(Effect e, StepLandmark s) {
+		for(String cond : e._Condition){
+			if(!s.Contains(cond)){
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public void expandStep(StepLandmark predicates_list) {
 		// 1 expand actions if possible (applicable)
 		StepLandmark ActionStep = new StepLandmark();

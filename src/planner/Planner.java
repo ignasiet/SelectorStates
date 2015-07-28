@@ -47,8 +47,8 @@ public class Planner {
 		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
 		
 		//String problem = "pW5-2States1.pddl";
-		String problem = "p-balls.pddl";
-		domain = initParsing(path_problem + "d-balls.pddl", path + problem);
+		String problem = "pdoors-5.pddl";
+		domain = initParsing(path_problem + "ddoors-5.pddl", path + problem);
 		//init();
 		/*TODO: ground conditional effects*/
 		domain.ground_all_actions();
