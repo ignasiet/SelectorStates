@@ -46,9 +46,9 @@ public class Planner {
 		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/Dominios/";
 		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
 		
-		//String problem = "pW5-2States1.pddl";
-		String problem = "pdoors-5.pddl";
-		domain = initParsing(path_problem + "ddoors-5.pddl", path + problem);
+		String problem = "p-balls9-3.pddl";
+		//String problem = "pdoors-5.pddl";
+		domain = initParsing(path_problem + "d-balls.pddl", path + problem);
 		//init();
 		/*TODO: ground conditional effects*/
 		domain.ground_all_actions();
@@ -79,7 +79,7 @@ public class Planner {
 		//Searcher aStar = new Searcher();
 		
 		/*Get landmarks*/
-		Landmarker lm = new Landmarker(domain.state, domain.list_actions, domain.goalState, domain.predicates_invariants);
+		Landmarker lm = new Landmarker(tr.domain_translated.state, tr.domain_translated.list_actions, tr.domain_translated.goalState, tr.domain_translated.predicates_invariants);
 		
 		/*Time measure: search*/
 		startTime = System.currentTimeMillis();
