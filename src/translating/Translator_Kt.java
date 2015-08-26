@@ -10,7 +10,7 @@ import pddlElements.Domain;
  * @author ignasi
  *
  */
-public class Translator {
+public class Translator_Kt {
 
 	/**
 	 * 
@@ -20,7 +20,7 @@ public class Translator {
 	protected ArrayList<String> predicates_opposed;
 	public Domain domain_translated = new Domain();
 	
-	public Translator(Domain domain_to_translate) {
+	public Translator_Kt(Domain domain_to_translate) {
 		// 1 - Translate predicates (all)
 		translatePredicates(domain_to_translate.predicates_grounded, domain_to_translate.predicates_uncertain);
 		// 2-Translate initial state
