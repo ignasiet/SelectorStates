@@ -25,8 +25,8 @@ public class Printer {
 	private static void printDomainFile(){
 		try {
 			// Print problem as an XML File
-			String path = "/home/ignasi/Dropbox/USP/Replanner/Cdomain.pddl";
-			File file = new File("Cdomain.pddl");
+			String path = "src/outputs/Cdomain.pddl";
+			File file = new File(path);
 			// if file doesnt exists, then create it
 			if (!file.exists()) {
 				file.createNewFile();
@@ -45,8 +45,8 @@ public class Printer {
 	private static void printProblemFile(){
 		try {
 			// Print problem as an XML File
-			String path = "/home/ignasi/Dropbox/USP/Replanner/Cproblem.pddl";
-			File file = new File("Cproblem.pddl");
+			String path = "src/outputs/Cproblem.pddl";
+			File file = new File(path);
 			// if file doesnt exists, then create it
 			if (!file.exists()) {
 				file.createNewFile();
@@ -103,11 +103,18 @@ public class Printer {
 				auxStr = auxStr + "\n";
 			}
 			auxStr = auxStr + ":effect ";
-			if(action._Positive_effects.size()>1){
+			auxStr = auxStr + "(and ";
+			/*Effects + and -*/
+			for(String effect : action._Positive_effects){
+				auxStr = auxStr + negateString(effect);
+			}
+			for(String effect : action._Negative_effects){
+				auxStr = auxStr + negateString(effect);
+			}
+			auxStr = auxStr + ")\n";
+			/*if(action._Positive_effects.size()>1){
 				auxStr = auxStr + "(and ";
-				for(String effect : action._Positive_effects){
-					auxStr = auxStr + negateString(effect);
-				}
+				
 				auxStr = auxStr + ")\n";
 			}
 			else{
@@ -118,9 +125,7 @@ public class Printer {
 			}
 			if(action._Negative_effects.size()>1){
 				auxStr = auxStr + "(and ";
-				for(String effect : action._Negative_effects){
-					auxStr = auxStr + negateString(effect);
-				}
+				
 				auxStr = auxStr + ")\n";
 			}
 			else{
@@ -129,6 +134,7 @@ public class Printer {
 				}
 				auxStr = auxStr + "\n";
 			}
+			*/
 			auxStr = auxStr + ")\n";
 		}
 		return auxStr;

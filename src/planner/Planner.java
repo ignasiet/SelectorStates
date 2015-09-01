@@ -20,6 +20,7 @@ import readers.PDDLParser.Expr;
 import searcher.Searcher;
 import searcher.SolutionTree;
 import searcher.TreeNode;
+import translating.Printer;
 import translating.Translator_Kt;
 import landmarker.*;
 import pddlElements.*;
@@ -46,20 +47,14 @@ public class Planner {
 		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/Dominios/";
 		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
 		
+		/*Define problem*/
 		String problem = "pW.pddl";
-		//String problem = "pdoors-5.pddl";
 		domain = initParsing(path_problem + "dW.pddl", path + problem);
 		//init();
-		/*TODO: ground conditional effects*/
+		/*Ground conditional effects*/
 		domain.ground_all_actions();
-		//System.out.println("Done grounding.");
-		//String problem = "pW" + randInt(1, 7) + ".pddl";		
-		//System.out.println("Printing");
-		//Printer.Printer(domain);
-		//parseInit(path + problem);
+		/*Select hidden file*/
 		String hidden = "hidden5Complete7.pddl";
-		//System.out.println("Done parsing initial state.");
-		//String hidden = "hidden" + i + ".pddl";
 		System.out.println("Problem real: " + hidden);
 		parseHidden(path + hidden);	
 		
@@ -75,20 +70,49 @@ public class Planner {
 		
 		/*Size measure*/
 		//System.out.println(domain.predicates_grounded.size() + " " + tr.domain_translated.predicates_grounded.size());
-		//Printer.Printer(tr.domain_translated);
-		//Searcher aStar = new Searcher();
+		/*Print domain*/
+		Printer.Printer(tr.domain_translated);
+		/*Start search*/
+		Searcher aStar = new Searcher();
 		
 		/*Get landmarks*/
-		Landmarker lm = new Landmarker(tr.domain_translated.state, tr.domain_translated.list_actions, tr.domain_translated.goalState, tr.domain_translated.predicates_invariants);
+		//Landmarker lm = new Landmarker(tr.domain_translated.state, tr.domain_translated.list_actions, tr.domain_translated.goalState, tr.domain_translated.predicates_invariants);
 		
 		/*Time measure: search*/
 		startTime = System.currentTimeMillis();
-		//aStar.searchPlan(tr.domain_translated);
+		aStar.searchPlan(tr.domain_translated);
 		endTime = System.currentTimeMillis();
 		System.out.println("Time: " + (endTime - startTime) + " Milliseconds");
 
 		/*Execute and verify plan*/
 		//executor(aStar);		
+	}
+	
+	private static void callFFPlanner(){
+		// Run a java app in a separate system process
+				//Process proc = Runtime.getRuntime().exec("java -jar regressionGUI.jar problem.xml propplan 900000 90000");
+				// Then retreive the process output
+				//InputStream in = proc.getInputStream();
+				//InputStream err = proc.getErrorStream();
+				
+				//TODO: Select a set of possible initial states
+				//dom.generateInitialState();
+				
+				//Translate problem to PDDL
+				//Reader rd = new Reader(dom);
+				
+				
+				
+				//Call planner: must have FF-planner (see config)
+				//Process proc = Runtime.getRuntime().exec("./ff -o Kdomain.pddl -f Kproblem.pddl");
+				// Then retrieve the process output
+				//InputStream in = proc.getInputStream();
+				//InputStream err = proc.getErrorStream();
+				
+				// read the output from the command
+				//BufferedReader bri = new BufferedReader(new InputStreamReader(in));
+				//Plan solution = new Plan();
+				//Executer exec = new Executer(dom);
 	}
 
 	private static void executor(Searcher aStar){

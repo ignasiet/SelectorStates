@@ -22,7 +22,7 @@ public class Translator_Kt {
 	
 	public Translator_Kt(Domain domain_to_translate) {
 		// 1 - Translate predicates (all)
-		translatePredicates(domain_to_translate.predicates_grounded, domain_to_translate.predicates_uncertain);
+		translatePredicates(domain_to_translate.predicates_grounded, domain_to_translate.predicates_uncertain, domain_to_translate.predicates_invariants_grounded);
 		// 2-Translate initial state
 		translateInitialState(domain_to_translate.state);
 		// 3 - Translate goal
@@ -129,7 +129,7 @@ public class Translator_Kt {
 		}
 	}
 
-	private void translatePredicates(ArrayList<String> predicates_grounded, ArrayList<String> predicates_uncertain) {
+	private void translatePredicates(ArrayList<String> predicates_grounded, ArrayList<String> predicates_uncertain, Hashtable<String, Integer> predicates_invariants_grounded) {
 		Integer number_tag = 1;
 		predicates_opposed = new ArrayList<String>(predicates_uncertain);
 		for(String tag : predicates_uncertain){
@@ -142,20 +142,26 @@ public class Translator_Kt {
 		}
 		//1- predicates without tags
 		for(String predicate : predicates_grounded){
-			//KL
-			domain_translated.predicates_grounded.add("K" + predicate);
-			//ML
-			//domain_translated.predicates_grounded.add("M" + predicate);
-			//K not L
-			domain_translated.predicates_grounded.add("K~" + predicate);
-			//M not L
-			//domain_translated.predicates_grounded.add("M~" + predicate);
-			for(String tag : _TagList){
-				//KL-tagi
-				domain_translated.predicates_grounded.add("K" + predicate + "-" + _Tags.get(tag));
-				//K not L-tagi
-				domain_translated.predicates_grounded.add("K~" + predicate + "-" + _Tags.get(tag));
-			}			
+			if(!predicates_invariants_grounded.containsKey(predicate)){
+				//KL
+				domain_translated.predicates_grounded.add("K" + predicate);
+				//ML
+				//domain_translated.predicates_grounded.add("M" + predicate);
+				//K not L
+				domain_translated.predicates_grounded.add("K~" + predicate);
+				//M not L
+				//domain_translated.predicates_grounded.add("M~" + predicate);
+				for(String tag : _TagList){
+					//KL-tagi
+					domain_translated.predicates_grounded.add("K" + predicate + "-" + _Tags.get(tag));
+					//K not L-tagi
+					domain_translated.predicates_grounded.add("K~" + predicate + "-" + _Tags.get(tag));
+				}
+			}else{
+				/*Invariant predicates*/
+				domain_translated.predicates_grounded.add("K" + predicate);
+				domain_translated.predicates_grounded.add("K~" + predicate);
+			}					
 		}
 	}
 

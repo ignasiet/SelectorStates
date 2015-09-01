@@ -9,25 +9,13 @@ import pddlElements.Action;
 import planner.Planner;
 
 
-public class Product {
+public class Main {
 	
 	private static Hashtable<String, ArrayList> constantes = new Hashtable<String, ArrayList>();
 	private static Hashtable<String, Action> list_actions = new Hashtable<String, Action>();
 	
 	
 	public static void main(String[] args){
-		/*extract("(:objects o1 o2 - obj p1-1 p1-2 p2-1 p2-2 - pos red blue purple green - col t1 t2 t3 t4 - gar )");
-		
-		System.out.println("Hashtable: " + constantes.get("col").toString());
-		Action action = new Action();
-		action.Name = "observe-ball";
-		action._parameters.add("?pos");
-		action._parameters.add("?o");
-		action.action_parameters.put("?pos", "pos");
-		action.action_parameters.put("?o", "obj");		
-		action._precond.add("at_?pos");
-		action._effect.add("obj-at_?o_?pos");
-		ground_actions(action);*/
 		Planner.startPlanner();
 	}
 	
