@@ -4,6 +4,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import pddlElements.Action;
+import pddlElements.Axiom;
 import pddlElements.Domain;
 
 /**
@@ -35,6 +36,26 @@ public class Translator_Kt {
 		addTagRefutation(domain_to_translate);
 		// 7 - Add deductive actions
 		addDeductiveActions(domain_to_translate);
+		// 8 - Add axioms
+		addAxiomsActions(domain_to_translate);
+	}
+
+	private void addAxiomsActions(Domain domain_to_translate) {
+		int i = 1;
+		for(Axiom ax : domain_to_translate._Axioms){
+			if(ax._Head.size()<2){
+				Action a = new Action();
+				for(String prec : ax._Body){
+					a._precond.add("K" + prec);
+					a.Name = i + "-deductive-" + prec;
+				}
+				for(String h : ax._Head){
+					a._Positive_effects.add("K" + h);
+				}
+				domain_translated.list_actions.put(a.Name, a);
+			}
+			i++;			
+		}		
 	}
 
 	private void addDeductiveActions(Domain domain_to_translate) {
@@ -86,17 +107,7 @@ public class Translator_Kt {
 		while(e.hasMoreElements()){
 			Action a = list_actions.get(e.nextElement().toString());
 			if(a.IsObservation){
-				Action a_translated = new Action();
-				a_translated.IsObservation = true;
-				a_translated.Name = a.Name;
-				for(String precondition : a._precond){
-					a_translated._precond.add("K" + precondition);
-				}
-				for(String positive_effect : a._Positive_effects){
-					a_translated._Positive_effects.add("K" + positive_effect);
-					a_translated._Positive_effects.add("K~" + positive_effect);
-				}
-				domain_translated.list_actions.put(a_translated.Name, a_translated);
+				translateObservations(a);
 			}else{
 				Action a_translated = new Action();
 				a_translated.IsObservation = false;
@@ -121,6 +132,22 @@ public class Translator_Kt {
 				domain_translated.list_actions.put(a_translated.Name, a_translated);
 			}
 		}
+	}
+
+	private void translateObservations(Action a) {
+		Action a_translated = new Action();
+		a_translated.IsObservation = true;
+		a_translated.Name = a.Name;
+		for(String precondition : a._precond){
+			a_translated._precond.add("K" + precondition);
+		}
+		for(String positive_effect : a._Positive_effects){
+			a_translated._precond.add("~K" + positive_effect);
+			a_translated._precond.add("~K~" + positive_effect);
+			a_translated._Positive_effects.add("K" + positive_effect);
+			a_translated._Positive_effects.add("K~" + positive_effect);
+		}
+		domain_translated.list_actions.put(a_translated.Name, a_translated);
 	}
 
 	private void translateGoal(ArrayList<String> goalState) {

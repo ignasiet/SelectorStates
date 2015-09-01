@@ -74,10 +74,10 @@ public class Printer {
 	private static String negateString(String pred){
 		String auxStr = "";
 		if(pred.startsWith("~")){
-			auxStr = auxStr + "(not (" + pred.replace("~", "") + ")) ";
+			auxStr = auxStr + "(not (" + pred.substring(1).replace("~", negateString) + ")) ";
 		}
 		else{
-			auxStr = auxStr + "(" + pred + ") ";
+			auxStr = auxStr + "(" + pred.replace("~", negateString) + ") ";
 		}
 		return auxStr;
 	}

@@ -59,16 +59,16 @@ public class Searcher {
 		domain_translated = domain;
 		SearchNode initialState = new SearchNode(domain.state);
 		initialState._ActionsApplied = new Hashtable<String, Integer>();
-		//debuggerTester(initialState);
+		debuggerTester(initialState);
 		graphplanner gp = new graphplanner(initialState.getState(), domain.list_actions, domain.goalState);
-		if(!gp.fail){
+		/*if(!gp.fail){
 			initialState.heuristicValue = gp.heuristicValue();
 			initialState.fCost = initialState.heuristicValue + initialState.pathCost;
 			Queue<SearchNode> fringe = initFringe();
 			initialState._ActionsApplied = new Hashtable<String, Integer>();
 			fringe.add(initialState);
 			searcherContingentPlan(fringe, domain);
-		}
+		}*/
 	}
 	
 	public void replan(Domain domain, Hashtable<String, Integer> _actionsApplied, Hashtable<String, Integer> observations){
