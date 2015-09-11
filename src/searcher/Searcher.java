@@ -11,6 +11,7 @@ import java.util.Queue;
 
 import pddlElements.Action;
 import pddlElements.Domain;
+import planner.Heuristic;
 import planner.graphplanner;
 
 
@@ -60,7 +61,9 @@ public class Searcher {
 		SearchNode initialState = new SearchNode(domain.state);
 		initialState._ActionsApplied = new Hashtable<String, Integer>();
 		debuggerTester(initialState);
-		graphplanner gp = new graphplanner(initialState.getState(), domain.list_actions, domain.goalState);
+		//graphplanner gp = new graphplanner(initialState.getState(), domain.list_actions, domain.goalState, domain.predicates_invariants);
+		Heuristic gp = new Heuristic(initialState.getState(), domain.list_actions, domain.goalState, domain.predicates_invariants);
+		
 		/*if(!gp.fail){
 			initialState.heuristicValue = gp.heuristicValue();
 			initialState.fCost = initialState.heuristicValue + initialState.pathCost;
@@ -77,15 +80,17 @@ public class Searcher {
 		SearchNode initialState = new SearchNode(domain.state);
 		observations_made = observations;
 		//debuggerTester(initialState);
-		graphplanner gp = new graphplanner(initialState.getState(), domain.list_actions, domain.goalState);
-		if(!gp.fail){
-			initialState.heuristicValue = gp.heuristicValue();
+		//graphplanner gp = new graphplanner(initialState.getState(), domain.list_actions, domain.goalState, domain.predicates_invariants);
+		Heuristic gp = new Heuristic(initialState.getState(), domain.list_actions, domain.goalState, domain.predicates_invariants);
+		
+		//if(!gp.fail){
+			initialState.heuristicValue = gp.heuristicValue;
 			initialState.fCost = initialState.heuristicValue + initialState.pathCost;
 			Queue<SearchNode> fringe = initFringe();
 			initialState._ActionsApplied = new Hashtable<String, Integer>(_actionsApplied);
 			fringe.add(initialState);
 			searcherContingentPlan(fringe, domain);
-		}
+		//}
 	}
 	
 	public void searcherContingentPlan(Queue<SearchNode> fringe, Domain domain){
@@ -233,12 +238,13 @@ public class Searcher {
 	private SearchNode expand(SearchNode node, Action a) {
 		SearchNode node_sucessor = node.applyAction(a);
 			if(node_sucessor != null){
-			graphplanner gp = new graphplanner(node_sucessor.getState(), domain_translated.list_actions, domain_translated.goalState);
-			if(!gp.fail){
-				node_sucessor.heuristicValue = gp.heuristicValue();
-				node_sucessor.pathCost = node.pathCost + 1;
-				node_sucessor.fCost = node_sucessor.heuristicValue + node_sucessor.pathCost;
-			}
+			//graphplanner gp = new graphplanner(node_sucessor.getState(), domain_translated.list_actions, domain_translated.goalState, domain_translated.predicates_invariants);
+			Heuristic gp = new Heuristic(node_sucessor.getState(), domain_translated.list_actions, domain_translated.goalState, domain_translated.predicates_invariants);
+			
+			node_sucessor.heuristicValue = gp.heuristicValue;
+			node_sucessor.pathCost = node.pathCost + 1;
+			node_sucessor.fCost = node_sucessor.heuristicValue + node_sucessor.pathCost;
+			
 			return node_sucessor;
 		}
 		return null;
@@ -297,7 +303,7 @@ public class Searcher {
 	}
 
 	private SearchNode calculateHeuristic(SearchNode n){
-		graphplanner gp = new graphplanner(n.getState(), domain_translated.list_actions, domain_translated.goalState);
+		graphplanner gp = new graphplanner(n.getState(), domain_translated.list_actions, domain_translated.goalState, domain_translated.predicates_invariants);
 		n.heuristicValue = gp.heuristicValue();
 		n.fCost = n.pathCost + n.heuristicValue;
 		return n;

@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import parsing.ParserHelper;
 import pddlElements.Action;
 import pddlElements.Axiom;
 import pddlElements.Domain;
@@ -38,24 +39,34 @@ public class Translator_Kt {
 		addDeductiveActions(domain_to_translate);
 		// 8 - Add axioms
 		addAxiomsActions(domain_to_translate);
+		// 9 - Translate invariants
+		translateInvariants(domain_to_translate);
+	}
+
+	private void translateInvariants(Domain domain_to_translate) {
+		Enumeration e = domain_to_translate.predicates_invariants.keys();
+		while(e.hasMoreElements()){
+			String invariant_pred = e.nextElement().toString();
+			domain_translated.predicates_invariants.put("K" + invariant_pred, 1);
+		}
 	}
 
 	private void addAxiomsActions(Domain domain_to_translate) {
 		int i = 1;
 		for(Axiom ax : domain_to_translate._Axioms){
-			if(ax._Head.size()<2){
-				Action a = new Action();
-				for(String prec : ax._Body){
-					a._precond.add("K" + prec);
-					a.Name = i + "-deductive-" + prec;
-				}
-				for(String h : ax._Head){
-					a._Positive_effects.add("K" + h);
-				}
-				domain_translated.list_actions.put(a.Name, a);
+			Action a = new Action();
+			for(String prec : ax._Body){
+				//Normal axiom action
+				a._precond.add("K" + prec);
+				a.Name = i + "-deductive-" + prec;
 			}
-			i++;			
-		}		
+			for(String h : ax._Head){
+				//Normal axiom action
+				a._Positive_effects.add("K" + h);
+			}
+			domain_translated.list_actions.put(a.Name, a);
+			i++;
+		}
 	}
 
 	private void addDeductiveActions(Domain domain_to_translate) {
@@ -142,8 +153,8 @@ public class Translator_Kt {
 			a_translated._precond.add("K" + precondition);
 		}
 		for(String positive_effect : a._Positive_effects){
-			a_translated._precond.add("~K" + positive_effect);
-			a_translated._precond.add("~K~" + positive_effect);
+			//a_translated._precond.add("~K" + positive_effect);
+			//a_translated._precond.add("~K~" + positive_effect);
 			a_translated._Positive_effects.add("K" + positive_effect);
 			a_translated._Positive_effects.add("K~" + positive_effect);
 		}
