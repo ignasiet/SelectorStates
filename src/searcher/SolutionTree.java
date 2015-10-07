@@ -72,9 +72,7 @@ public class SolutionTree {
 		}
 		
 	}
-	
 
-	
 	public TreeNode getObservationNode(TreeNode tNode, String observation){
 		String next = observations_reversed.get("K" + observation);
 		if(next.contains(";")){

@@ -64,14 +64,14 @@ public class Searcher {
 		//graphplanner gp = new graphplanner(initialState.getState(), domain.list_actions, domain.goalState, domain.predicates_invariants);
 		Heuristic gp = new Heuristic(initialState.getState(), domain.list_actions, domain.goalState, domain.predicates_invariants);
 		
-		/*if(!gp.fail){
-			initialState.heuristicValue = gp.heuristicValue();
+		//if(!gp.fail){
+			initialState.heuristicValue = gp.heuristicValue;
 			initialState.fCost = initialState.heuristicValue + initialState.pathCost;
 			Queue<SearchNode> fringe = initFringe();
 			initialState._ActionsApplied = new Hashtable<String, Integer>();
 			fringe.add(initialState);
-			searcherContingentPlan(fringe, domain);
-		}*/
+			//searcherContingentPlan(fringe, domain);
+		//}
 	}
 	
 	public void replan(Domain domain, Hashtable<String, Integer> _actionsApplied, Hashtable<String, Integer> observations){
@@ -146,7 +146,7 @@ public class Searcher {
 			}
 		}
 		System.out.println("Path created.");
-		//solutionTree.printTree(domain_translated.list_actions);
+		solutionTree.printTree(domain_translated.list_actions);
 	}
 	
 	public void debuggerTester(SearchNode node){
@@ -219,7 +219,7 @@ public class Searcher {
 			}
 		}
 		if(fringe.isEmpty()){
-			//System.out.println("SEARCH FAILED!");
+			System.out.println("SEARCH FAILED!");
 		}
 	}
 	
@@ -303,8 +303,9 @@ public class Searcher {
 	}
 
 	private SearchNode calculateHeuristic(SearchNode n){
-		graphplanner gp = new graphplanner(n.getState(), domain_translated.list_actions, domain_translated.goalState, domain_translated.predicates_invariants);
-		n.heuristicValue = gp.heuristicValue();
+		//graphplanner gp = new graphplanner(n.getState(), domain_translated.list_actions, domain_translated.goalState, domain_translated.predicates_invariants);
+		Heuristic gp = new Heuristic(n.getState(), domain_translated.list_actions, domain_translated.goalState, domain_translated.predicates_invariants);
+		n.heuristicValue = gp.heuristicValue;
 		n.fCost = n.pathCost + n.heuristicValue;
 		return n;
 	}

@@ -48,8 +48,8 @@ public class Planner {
 		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
 		
 		/*Define problem*/
-		String problem = "pW.pddl";
-		domain = initParsing(path_problem + "dW.pddl", path + problem);
+		String problem = "p-balls.pddl";
+		domain = initParsing(path_problem + "d-balls.pddl", path + problem);
 		//init();
 		/*Ground conditional effects*/
 		domain.ground_all_actions();

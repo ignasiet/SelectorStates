@@ -3,6 +3,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import pddlElements.Action;
+import pddlElements.Effect;
+import planner.Step;
 
 /**
  * 
@@ -67,8 +69,37 @@ public class SearchNode {
 			}
 			node_sucessor.state.remove(effect_negative);
 		}
+		//3 - Apply conditional effects:
+		for(Effect conditionalEffect : a._Effects){
+			if(isEffectApplicable(conditionalEffect)){
+				for(String effectC : conditionalEffect._Effects){
+					if(effectC.startsWith("~")){
+						node_sucessor.state.remove(effectC.substring(1));
+					}else{
+						node_sucessor.state.put(effectC, 1);
+					}
+				}
+			}
+		}			
 		_applyAction = a.Name;
 		return node_sucessor;
+	}
+	
+	/**Verify if the conditional effect is applied*/
+	private boolean isEffectApplicable(Effect e){
+		for(String precondition : e._Condition){
+			if(!precondition.startsWith("~")){
+				if(!state.containsKey(precondition)){
+					//System.out.println(a.Name);
+					return false;
+				}
+			}else {
+				if(state.containsKey(precondition.substring(1))){
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 	
 	public ArrayList<SearchNode> expandObservation(Action a){

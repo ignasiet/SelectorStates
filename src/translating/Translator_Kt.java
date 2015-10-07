@@ -7,6 +7,7 @@ import parsing.ParserHelper;
 import pddlElements.Action;
 import pddlElements.Axiom;
 import pddlElements.Domain;
+import pddlElements.Effect;
 
 /**
  * @author ignasi
@@ -140,9 +141,32 @@ public class Translator_Kt {
 				if(a.deductive_action){
 					a_translated.deductive_action = true;
 				}
+				if(a._IsConditionalEffect){
+					a_translated._IsConditionalEffect = true;
+					for(Effect eff : a._Effects){
+						a_translated._Effects.addAll(translateEffects(eff));
+					}					
+				}
 				domain_translated.list_actions.put(a_translated.Name, a_translated);
 			}
 		}
+	}
+	
+	private ArrayList<Effect> translateEffects(Effect eff){
+		ArrayList<Effect> returnList = new ArrayList<Effect>();
+		Effect supportRule = new Effect();
+		Effect cancelRule = new Effect();
+		for(String condition : eff._Condition){
+			supportRule._Condition.add("K" + condition);
+			cancelRule._Condition.add("~K" + ParserHelper.complement(condition));
+		}
+		for(String effect : eff._Effects){
+			supportRule._Effects.add("K" + effect);
+			cancelRule._Effects.add("~K" + ParserHelper.complement(effect));
+		}
+		returnList.add(supportRule);
+		returnList.add(cancelRule);
+		return returnList;
 	}
 
 	private void translateObservations(Action a) {
