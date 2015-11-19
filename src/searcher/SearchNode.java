@@ -59,7 +59,7 @@ public class SearchNode {
 		node_sucessor._ActionsApplied = new Hashtable<String, Integer>(this._ActionsApplied);
 		node_sucessor._ActionsApplied.put(a.Name, 1);
 		//1-Apply positive effects:
-		for(String effect_positive : a._Positive_effects){
+		/*for(String effect_positive : a._Positive_effects){
 			node_sucessor.state.put(effect_positive, 1);
 		}
 		//2 - Apply negative effects:
@@ -68,7 +68,7 @@ public class SearchNode {
 				effect_negative = effect_negative.substring(1);
 			}
 			node_sucessor.state.remove(effect_negative);
-		}
+		}*/
 		//3 - Apply conditional effects:
 		for(Effect conditionalEffect : a._Effects){
 			if(isEffectApplicable(conditionalEffect)){
@@ -87,19 +87,23 @@ public class SearchNode {
 	
 	/**Verify if the conditional effect is applied*/
 	private boolean isEffectApplicable(Effect e){
-		for(String precondition : e._Condition){
-			if(!precondition.startsWith("~")){
-				if(!state.containsKey(precondition)){
-					//System.out.println(a.Name);
-					return false;
-				}
-			}else {
-				if(state.containsKey(precondition.substring(1))){
-					return false;
+		if(e._Condition.isEmpty()){
+			return true;
+		}else{
+			for(String precondition : e._Condition){
+				if(!precondition.startsWith("~")){
+					if(!state.containsKey(precondition)){
+						//System.out.println(a.Name);
+						return false;
+					}
+				}else {
+					if(state.containsKey(precondition.substring(1))){
+						return false;
+					}
 				}
 			}
-		}
-		return true;
+			return true;
+		}		
 	}
 	
 	public ArrayList<SearchNode> expandObservation(Action a){
@@ -120,7 +124,7 @@ public class SearchNode {
 		node_sucessor_negative._ActionsApplied.put(a.Name, 1);
 		//For every effect
 		boolean isFirst = true;
-		for(String effect_positive : a._Positive_effects){
+		for(String effect_positive : a._Effects){
 			if(isFirst){
 				node_sucessor_positive.state.put(effect_positive, 1);
 				node_sucessor_negative.state.remove(effect_positive);
