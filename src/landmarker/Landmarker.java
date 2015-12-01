@@ -331,10 +331,10 @@ public class Landmarker {
 				for(String precondition : a._precond) {
 					ActionStep.updateParentNode(action_name, predicates_list.getNode(precondition));
 				}
-				for(String effect : a._Positive_effects){					
+				/*for(String effect : a._Positive_effects){					
 					//Verify if the node already exists
 					addEffect(PredicateStep, effect, no);
-					/*if(PredicateStep.Contains(effect)){
+					if(PredicateStep.Contains(effect)){
 						PredicateStep.updateParentNode(effect, no);
 					}else{
 						NodeLandmark node_effect = new NodeLandmark(effect);
@@ -347,8 +347,8 @@ public class Landmarker {
 							//ActionStep.updateSuccessorNode(action_name, node_effect);
 							PredicateStep.updateParentNode(effect, no);
 						}
-					}*/
-				}
+					}
+				}*/
 				//If is a contains conditional effect: 
 				if(a._IsConditionalEffect){
 					//Verify effects can be applied
@@ -416,7 +416,7 @@ public class Landmarker {
 					predicates_list.updateSuccessorNode(precondition, no);
 					ActionStep.updateParentNode(action_name, predicates_list.getNode(precondition));
 				}
-				for(String effect : a._Positive_effects){
+				/*for(String effect : a._Positive_effects){
 					NodeLandmark node_effect = new NodeLandmark(effect);
 					if(node_effect.level > PredicateStep.step){
 						node_effect.level = PredicateStep.step;
@@ -424,7 +424,7 @@ public class Landmarker {
 					PredicateStep.addNode(node_effect);
 					ActionStep.updateSuccessorNode(action_name, node_effect);
 					PredicateStep.updateParentNode(effect, no);
-				}
+				}*/
 			}
 		}
 		// 2 Add no-ops actions and effects

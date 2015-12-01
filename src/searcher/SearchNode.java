@@ -123,8 +123,10 @@ public class SearchNode {
 		node_sucessor_negative._ActionsApplied = new Hashtable<String, Integer>(this._ActionsApplied);
 		node_sucessor_negative._ActionsApplied.put(a.Name, 1);
 		//For every effect
+		//TODO: As commented before, single effect for observations?
 		boolean isFirst = true;
-		for(String effect_positive : a._Effects){
+		for(Effect effect : a._Effects){
+			String effect_positive = effect._Effects.get(0);
 			if(isFirst){
 				node_sucessor_positive.state.put(effect_positive, 1);
 				node_sucessor_negative.state.remove(effect_positive);
@@ -150,16 +152,18 @@ public class SearchNode {
 		node_sucessor_positive._ActionsApplied = new Hashtable<String, Integer>(this._ActionsApplied);
 		//1-Apply positive effects:
 		boolean isFirst = true;
-		for(String effect_positive : a._Positive_effects){
+		//for(String effect_positive : a._Positive_effects){
+		//TODO: verify expansion observation
+		for(Effect eff : a._Effects){
 			if(isFirst){
-				node_sucessor_positive.state.put(effect_positive, 1);
-				node_sucessor_positive.observation_divisor = effect_positive;
-				node_sucessor_negative.state.remove(effect_positive);
+				node_sucessor_positive.state.put(eff._Effects.get(0), 1);
+				node_sucessor_positive.observation_divisor = eff._Effects.get(0);
+				node_sucessor_negative.state.remove(eff._Effects.get(0));
 				isFirst = false;
 			}else{
-				node_sucessor_negative.state.put(effect_positive, 1);
-				node_sucessor_positive.state.remove(effect_positive);
-				node_sucessor_negative.observation_divisor = effect_positive;
+				node_sucessor_negative.state.put(eff._Effects.get(0), 1);
+				node_sucessor_positive.state.remove(eff._Effects.get(0));
+				node_sucessor_negative.observation_divisor = eff._Effects.get(0);
 			}			
 		}
 		ArrayList<SearchNode> list_return = new ArrayList<SearchNode>();

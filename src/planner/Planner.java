@@ -13,14 +13,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import parsing.Parser;
+import parsing.ParserHelper;
 import pddlElements.Action;
 import pddlElements.Domain;
+import pddlElements.Printer;
 import readers.ExprList;
 import readers.PDDLParser.Expr;
 import searcher.Searcher;
 import searcher.SolutionTree;
 import searcher.TreeNode;
-import translating.Printer;
 import translating.Translator_Kt;
 import landmarker.*;
 import pddlElements.*;
@@ -36,59 +37,72 @@ public class Planner {
 	private static Hashtable<String, Integer> observations_Hash = new Hashtable<String, Integer>();
 	
 	@SuppressWarnings("unused")
-	public static void startPlanner(){
+	public static void startPlanner(String domain_file_path, String problem_file_path, String file_out_path){
 
 		/*String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
 		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
 		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
 		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";*/
-		String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
-		String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
-		String path_problem = "/home/ignasi/Dropbox/USP/Replanner/Dominios/";
-		String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
+		//String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
+		//String path_print = "/home/ignasi/workspace/CLG_cluster/";
+		//String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
+		//String path_problem = "/home/ignasi/Dropbox/USP/Replanner/Dominios/";
+		//String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
 		
 		/*Define problem*/
-		String problem = "p-balls.pddl";
-		domain = initParsing(path_problem + "d-balls.pddl", path + problem);
+		//String problem = "pW.pddl";
+		//String dom_file_name = "dW.pddl";
+		long startTime = System.currentTimeMillis();
+		domain = initParsing(domain_file_path, problem_file_path);
 		//init();
 		/*Ground conditional effects*/
 		domain.ground_all_actions();
 		/*Select hidden file*/
-		String hidden = "hidden5Complete7.pddl";
-		System.out.println("Problem real: " + hidden);
-		parseHidden(path + hidden);	
+		//String hidden = "hidden5Complete7.pddl";
+		//System.out.println("Problem real: " + hidden);
+		//parseHidden(path + hidden);	
 		
 		/*Process entry*/
 		domain.getInvariantPredicates();
 		domain.eliminateInvalidActions();
+		long endTime = System.currentTimeMillis();
+		System.out.println("Preprocessing time: " + (endTime - startTime) + " milliseconds");
+		
+		//TODO: Print domain, to test for errors: show Thiago
+		// to create a domain generator
+		//Printer.print(path_print + "d-balls.pddl", domain);
 		
 		/*Time measure: translation*/
-		long startTime = System.currentTimeMillis();
+		domain = ParserHelper.cleanProblem(domain);
+		startTime = System.currentTimeMillis();
 		Translator_Kt tr = new Translator_Kt(domain);
-		long endTime = System.currentTimeMillis();
+		endTime = System.currentTimeMillis();
 		System.out.println("Translation time: " + (endTime - startTime) + " Milliseconds");
 		
 		/*Size measure*/
 		//System.out.println(domain.predicates_grounded.size() + " " + tr.domain_translated.predicates_grounded.size());
 		/*Print domain*/
-		Printer.Printer(tr.domain_translated);
+		startTime = System.currentTimeMillis();
+		Printer.print(file_out_path + "Kdomain.pddl", file_out_path + "Kproblem.pddl", tr.domain_translated);
+		endTime = System.currentTimeMillis();
+		System.out.println("Printing time: " + (endTime - startTime) + " Milliseconds");
 		/*Start search*/
-		Searcher aStar = new Searcher();
+		//Searcher aStar = new Searcher();
 		
 		/*Get landmarks*/
 		//Landmarker lm = new Landmarker(tr.domain_translated.state, tr.domain_translated.list_actions, tr.domain_translated.goalState, tr.domain_translated.predicates_invariants);
 		
 		/*Time measure: search*/
-		startTime = System.currentTimeMillis();
+		/*startTime = System.currentTimeMillis();
 		aStar.searchPlan(tr.domain_translated);
 		endTime = System.currentTimeMillis();
-		System.out.println("Time: " + (endTime - startTime) + " Milliseconds");
+		System.out.println("Time: " + (endTime - startTime) + " Milliseconds");*/
 
 		/*Execute and verify plan*/
 		//executor(aStar);		
 	}
 	
-	private static void callFFPlanner(){
+	/*private static void callFFPlanner(){
 		// Run a java app in a separate system process
 				//Process proc = Runtime.getRuntime().exec("java -jar regressionGUI.jar problem.xml propplan 900000 90000");
 				// Then retreive the process output
@@ -113,9 +127,9 @@ public class Planner {
 				//BufferedReader bri = new BufferedReader(new InputStreamReader(in));
 				//Plan solution = new Plan();
 				//Executer exec = new Executer(dom);
-	}
+	}*/
 
-	private static void executor(Searcher aStar){
+	/*private static void executor(Searcher aStar){
 		boolean success = false;
 		while(!success){
 			_actionsApplied.clear();
@@ -137,7 +151,7 @@ public class Planner {
 				System.out.println("Time: " + (endTime - startTime) + " Milliseconds");
 			}
 		}
-	}
+	}*/
 		
 	public static int randInt(int min, int max) {
 	    // NOTE: Usually this should be a field rather than a method
@@ -170,7 +184,7 @@ public class Planner {
 		}
 	}
 	
-	private static boolean tryPlan(SolutionTree treePlan){
+	/*private static boolean tryPlan(SolutionTree treePlan){
 		boolean result = true;
 		TreeNode action_node = treePlan.root;
 		if(action_node.name.equals("root")){
@@ -204,9 +218,9 @@ public class Planner {
 			result = false;
 		}
 		return result;		
-	}
+	}*/
 	
-	private static boolean testPlan(){
+	/*private static boolean testPlan(){
 		actions_left = plan.size();
 		for(String action : plan){
 			if(domain.applyAction(action)){
@@ -219,9 +233,9 @@ public class Planner {
 			}
 		}
 		return true;
-	}
+	}*/
 
-	private static void loadPlan(String path) {
+	/*private static void loadPlan(String path) {
 		try {
 			path = "plan.txt";
 			BufferedReader in = new BufferedReader(new FileReader(path));
@@ -237,22 +251,15 @@ public class Planner {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
+	}*/
 
 	private static Domain initParsing(String pathDomain, String pathProblem){
 		Parser p = new Parser(pathDomain, pathProblem);
 		Domain domain_completed = p.getDomain();
 		return domain_completed;
 	}
-		
 	
-	/*public static String cleanString(String a){
-		a = a.replace("and", "").replaceAll("\\n", "").replaceAll("[()]", "").replace("not ", "~").replace(" ", "_").trim();
-		return a;
-	}*/
-		
-	
-	private static void parseHidden(String path){
+	/*private static void parseHidden(String path){
 		Scanner scan;
 		try {
 			scan = new Scanner(new File(path));
@@ -262,7 +269,5 @@ public class Planner {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	
+	}*/	
 }

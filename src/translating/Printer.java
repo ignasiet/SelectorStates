@@ -104,37 +104,7 @@ public class Printer {
 			}
 			auxStr = auxStr + ":effect ";
 			auxStr = auxStr + "(and ";
-			/*Effects + and -*/
-			for(String effect : action._Positive_effects){
-				auxStr = auxStr + negateString(effect);
-			}
-			for(String effect : action._Negative_effects){
-				auxStr = auxStr + negateString(effect);
-			}
 			auxStr = auxStr + ")\n";
-			/*if(action._Positive_effects.size()>1){
-				auxStr = auxStr + "(and ";
-				
-				auxStr = auxStr + ")\n";
-			}
-			else{
-				for(String effect : action._Positive_effects){
-					auxStr = auxStr + negateString(effect);
-				}
-				auxStr = auxStr + "\n";
-			}
-			if(action._Negative_effects.size()>1){
-				auxStr = auxStr + "(and ";
-				
-				auxStr = auxStr + ")\n";
-			}
-			else{
-				for(String effect : action._Negative_effects){
-					auxStr = auxStr + negateString(effect);
-				}
-				auxStr = auxStr + "\n";
-			}
-			*/
 			auxStr = auxStr + ")\n";
 		}
 		return auxStr;
@@ -151,7 +121,6 @@ public class Printer {
 		auxStr = auxStr + ")\n";
 		return auxStr;
 	}
-	
 	
 	private static String printProblem() {
 		String auxStr = "";
@@ -190,8 +159,7 @@ public class Printer {
 			}
 		}
 		auxStr = auxStr + ")\n)";
-		return auxStr;
-		
+		return auxStr;		
 	}	
 	
 	

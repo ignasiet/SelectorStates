@@ -5,21 +5,65 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
 import pddlElements.Action;
 import planner.Planner;
 
 
 public class Main {
 	
-	private static Hashtable<String, ArrayList> constantes = new Hashtable<String, ArrayList>();
-	private static Hashtable<String, Action> list_actions = new Hashtable<String, Action>();
-	
+	//private static Hashtable<String, ArrayList> constantes = new Hashtable<String, ArrayList>();
+	//private static Hashtable<String, Action> list_actions = new Hashtable<String, Action>();
+	private static Options options = new Options();
 	
 	public static void main(String[] args){
-		Planner.startPlanner();
+		// create Options object
+
+		// add options
+		options.addOption("h", "help", false, "Show help.");
+		options.addOption("online", false, "Performs an online search (default is false)");
+		options.addOption("o", "output",  true, "Output folder for translated problems.");
+		options.addOption("d", "domain", true, "Domain file.");
+		options.addOption("p", "problem", true, "Problem file.");
+		
+		try {
+	        // parse the command line arguments
+			CommandLineParser parser = new DefaultParser();
+			CommandLine cmd = parser.parse(options, args);
+			// get c option value			
+			if (cmd.hasOption("h")){
+				help();
+			}else{
+				if(!cmd.hasOption("d") | !cmd.hasOption("o") | !cmd.hasOption("p")){
+					System.out.println("Incorrect call. See help:");
+					help();
+				}
+				String domainfile = cmd.getOptionValue("d");
+				String problemfile = cmd.getOptionValue("p");
+				String outputfile = cmd.getOptionValue("o");
+				Planner.startPlanner(domainfile, problemfile, outputfile);
+			}
+	    }catch (ParseException e) {
+	    	// oops, something went wrong
+	        System.err.println( "Parsing failed.  Reason: " + e.getMessage() );
+			e.printStackTrace();
+		}		
 	}
 	
-	public static void extract(String objects){
+	private static void help() {
+		// This prints out some help
+		HelpFormatter formater = new HelpFormatter();
+		formater.printHelp("Main", options);
+		System.exit(0);
+	}
+	
+	/*public static void extract(String objects){
 		String[] splited_objects = objects.split(" ");
 		String last_object = "";
 		ArrayList<String> lista_objetos = new ArrayList<String>(Arrays.asList(splited_objects));
@@ -54,36 +98,5 @@ public class Main {
 			}
 			return result;
 		}
-	}
-
-	public static void ground_actions(Action action){
-//		ArrayList<String> result = new ArrayList<String>();
-//		//Hashtable<String, String> substitution = new Hashtable<String, String>();
-//		Enumeration e = action.action_parameters.keys();
-//		while(e.hasMoreElements()){
-//			String parameter = e.nextElement().toString();
-//			result = product(constantes.get(action.action_parameters.get(parameter)), result);
-//		}
-//		for(String combination : result){
-//			System.out.println(combination);
-//			Action act_grounded = new Action();
-//			act_grounded.Name = action.Name + "_" + combination.replace(";", "_");
-//			ArrayList<String> lista_objetos = new ArrayList<String>(Arrays.asList(combination.split(";")));
-//			int i = 0;
-//			String eff = action._effect.toString().replace("[", "").replace("]", "");
-//			String precond = action._precond.toString().replace("[", "").replace("]", "");
-//			for(String parameter : action._parameters){
-//				//String parameter = e.nextElement().toString();
-//				eff = eff.replace(parameter, lista_objetos.get(i));
-//				precond = precond.replace(parameter, lista_objetos.get(i));
-//				i++;
-//			}
-//			ArrayList<String> lista_efeitos = new ArrayList<String>(Arrays.asList(eff.split(",")));
-//			ArrayList<String> lista_precond = new ArrayList<String>(Arrays.asList(precond.split(",")));
-//			act_grounded._effect = lista_efeitos;				
-//			act_grounded._precond = lista_precond;
-//			list_actions.put(act_grounded.Name, act_grounded);
-//		}
-	}
-	
+	}*/
 }
