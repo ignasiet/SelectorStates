@@ -1,9 +1,112 @@
-DEDUCT-SAFE_P1-2
-DEDUCT-SAFE_P2-2
-DEDUCT-SAFE_P3-2
-DEDUCT-SAFE_P3-3
-MOVE_P1-1_P1-2
-MOVE_P1-2_P2-2
-MOVE_P2-2_P3-2
-MOVE_P3-2_P3-3
-GRAB_P3-3
+
+ff: parsing domain file
+domain 'WUMPUS' defined
+ ... done.
+ff: parsing problem file
+problem 'WUMPUS-5' defined
+ ... done.
+
+STATS quality of hash table of predicates: max_bucket_size = 4, ave_bucket_size = 0.539662
+ff-cond: no description file
+fact T0_FAIL_K0 tagged as -1  
+
+
+Skipping All searches!
+Starting K procedure.
+
+          h:                        14            [1]
+          h:                        14  , h_  :   13       
+::::::::::::::::::::::::current action:::MOVE_P1-1_P1-2
+
+          h:                        13            [1]
+          h:                        13  , h_  :   12       
+::::::::::::::::::::::::current action:::MOVE_P1-2_P1-3
+
+          h:                        12            [1]
+          h:                        12  , h_  :   11       
+::::::::::::::::::::::::current action:::MOVE_P1-3_P1-4
+
+          h:                        11            [1]
+          h:                        11  , h_  :   10       
+::::::::::::::::::::::::current action:::MOVE_P1-4_P1-5
+
+          h:                        10            [1]
+          h:                        10  , h_  :    9       
+::::::::::::::::::::::::current action:::MOVE_P1-5_P2-5
+
+          h:                         9            [1]
+          h:                         9  , h_  :    8       
+::::::::::::::::::::::::current action:::MOVE_P2-5_P3-5
+
+          h:                         8            [1]
+          h:                         8  , h_  :    7       
+::::::::::::::::::::::::current action:::SMELL_WUMPUS_P3-5
+
+ Observation selected after action SMELL_WUMPUS_P3-5:
+	 adding.. KN_STENCH_P3-5()
+          h:                         7            [1]
+          h:                         7  , h_  :    6       
+::::::::::::::::::::::::current action:::DEDUCTIVE_NOT_STENCH_P3-5
+
+          h:                         6            [1]
+          h:                         6  , h_  :    5       
+::::::::::::::::::::::::current action:::FEEL-BREEZE_P3-5
+
+ Observation selected after action FEEL-BREEZE_P3-5:
+	 adding.. KN_BREEZE_P3-5()
+          h:                         5            [1]
+          h:                         5  , h_  :    4       
+::::::::::::::::::::::::current action:::DEDUCTIVE_NOT_BREEZE_P3-5
+
+          h:                         4            [1]
+          h:                         4  , h_  :    3       
+::::::::::::::::::::::::current action:::DEDUCTIVE_NOT_PIT-AT_P4-5
+
+          h:                         3            [1]
+          h:                         3  , h_  :    2       
+::::::::::::::::::::::::current action:::MOVE_P3-5_P4-5
+
+          h:                         2            [1]
+          h:                         2  , h_  :    1       
+::::::::::::::::::::::::current action:::MOVE_P4-5_P5-5
+
+          h:                         1            [1]
+          h:                         1  , h_  :    0       
+::::::::::::::::::::::::current action:::GRAB_P5-5
+
+Goal reached in a branch 
+root
+0: MOVE_P1-1_P1-2
+1: MOVE_P1-2_P1-3
+2: MOVE_P1-3_P1-4
+3: MOVE_P1-4_P1-5
+4: MOVE_P1-5_P2-5
+5: MOVE_P2-5_P3-5
+6: SMELL_WUMPUS_P3-5
+7: DEDUCTIVE_NOT_STENCH_P3-5
+8: FEEL-BREEZE_P3-5
+9: DEDUCTIVE_NOT_BREEZE_P3-5
+10: DEDUCTIVE_NOT_PIT-AT_P4-5
+11: MOVE_P3-5_P4-5
+12: MOVE_P4-5_P5-5
+13: GRAB_P5-5
+
+
+ff: found legal plan as follows
+
+Total branches in this plan: 1 
+Longest branch: 14
+Total spurious branches in this plan: 0
+Total number of printed actions: 14
+
+
+time spent:    0.02 seconds instantiating 342 easy, 0 hard action templates
+               0.00 seconds reachability analysis, yielding 374 facts and 342 actions
+               0.00 seconds creating final representation with 350 relevant facts
+               0.00 seconds building connectivity graph
+               0.00 seconds computing closures operations
+               0.00 seconds searching, evaluating 41 states, expanding 14 nodes, to a max depth of 1
+               0.02 seconds total time
+
+
+

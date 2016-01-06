@@ -1,9 +1,12 @@
 package planner;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Random;
+import java.util.Scanner;
 
 import parser.Parser;
 import parser.ParserHelper;
@@ -22,7 +25,7 @@ public class Planner {
 	private static Hashtable<String, Integer> observations_Hash = new Hashtable<String, Integer>();
 	
 	@SuppressWarnings("unused")
-	public static void startPlanner(String domain_file_path, String problem_file_path, String file_out_path){
+	public static void startPlanner(String domain_file_path, String problem_file_path, String hidden_file, String file_out_path){
 
 		/*String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
 		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
@@ -42,6 +45,7 @@ public class Planner {
 		//init();
 		/*Ground conditional effects*/
 		domain.ground_all_actions();
+		parseHidden(hidden_file);
 		/*Select hidden file*/
 		//String hidden = "hidden5Complete7.pddl";
 		//System.out.println("Problem real: " + hidden);
@@ -71,6 +75,7 @@ public class Planner {
 		Printer.print(file_out_path + "Kdomain.pddl", file_out_path + "Kproblem.pddl", tr.domain_translated);
 		endTime = System.currentTimeMillis();
 		System.out.println("Printing time: " + (endTime - startTime) + " Milliseconds");
+		//domain = tr.domain_translated;
 		/*Start search*/
 		//Searcher aStar = new Searcher();
 		
@@ -81,63 +86,9 @@ public class Planner {
 		/*startTime = System.currentTimeMillis();
 		aStar.searchPlan(tr.domain_translated);
 		endTime = System.currentTimeMillis();
-		System.out.println("Time: " + (endTime - startTime) + " Milliseconds");*/
-
-		/*Execute and verify plan*/
-		//executor(aStar);		
+		System.out.println("Time: " + (endTime - startTime) + " Milliseconds");*/	
 	}
 	
-	/*private static void callFFPlanner(){
-		// Run a java app in a separate system process
-				//Process proc = Runtime.getRuntime().exec("java -jar regressionGUI.jar problem.xml propplan 900000 90000");
-				// Then retreive the process output
-				//InputStream in = proc.getInputStream();
-				//InputStream err = proc.getErrorStream();
-				
-				//TODO: Select a set of possible initial states
-				//dom.generateInitialState();
-				
-				//Translate problem to PDDL
-				//Reader rd = new Reader(dom);
-				
-				
-				
-				//Call planner: must have FF-planner (see config)
-				//Process proc = Runtime.getRuntime().exec("./ff -o Kdomain.pddl -f Kproblem.pddl");
-				// Then retrieve the process output
-				//InputStream in = proc.getInputStream();
-				//InputStream err = proc.getErrorStream();
-				
-				// read the output from the command
-				//BufferedReader bri = new BufferedReader(new InputStreamReader(in));
-				//Plan solution = new Plan();
-				//Executer exec = new Executer(dom);
-	}*/
-
-	/*private static void executor(Searcher aStar){
-		boolean success = false;
-		while(!success){
-			_actionsApplied.clear();
-			observations_Hash.clear();
-			if(tryPlan(aStar.getSolution())){
-				success = true;
-				System.out.println("Success!!!!");
-			}else{
-				System.out.println("Need to replan!");
-				long startTime = System.currentTimeMillis();
-				Translator_Kt tr = new Translator_Kt(domain);
-				long endTime = System.currentTimeMillis();
-				System.out.println("Translation time: " + (endTime - startTime) + " Milliseconds");
-				aStar = new Searcher();
-				startTime = System.currentTimeMillis();
-				aStar.clearHash();
-				aStar.replan(tr.domain_translated, _actionsApplied, observations_Hash);
-				endTime = System.currentTimeMillis();
-				System.out.println("Time: " + (endTime - startTime) + " Milliseconds");
-			}
-		}
-	}*/
-		
 	public static int randInt(int min, int max) {
 	    // NOTE: Usually this should be a field rather than a method
 	    // variable so that it is not re-seeded every call.
@@ -169,82 +120,13 @@ public class Planner {
 		}
 	}
 	
-	/*private static boolean tryPlan(SolutionTree treePlan){
-		boolean result = true;
-		TreeNode action_node = treePlan.root;
-		if(action_node.name.equals("root")){
-			action_node = action_node.left_sucessor;
-		}
-		try{
-			while(action_node.left_sucessor != null){			
-				if(domain.list_actions.get(action_node.name).IsObservation){
-					String observation = domain.sensingAction(action_node.name);
-					System.out.println("Observing: " + action_node.name + "(" + observation + ")");
-					//System.out.println("Observed: " + observation);
-					observations_Hash.put(action_node.name, 1);
-					_actionsApplied.put(action_node.name, 1);
-					action_node = treePlan.getObservationNode(action_node, observation);					
-				}else{				
-					if(domain.applyAction(action_node.name)){
-						actions_executed++;
-						actions_left--;
-						_actionsApplied.put(action_node.name, 1);
-						//System.out.println("Action : " + action + " is possible");
-					}else{
-						System.out.println("Action error.");
-						return false;
-					}
-					action_node = action_node.left_sucessor;
-				}			
-			}
-		}
-		catch(NullPointerException e){
-			System.out.println("Error on plan.");
-			result = false;
-		}
-		return result;		
-	}*/
-	
-	/*private static boolean testPlan(){
-		actions_left = plan.size();
-		for(String action : plan){
-			if(domain.applyAction(action)){
-				actions_executed++;
-				actions_left--;
-				//System.out.println("Action : " + action + " is possible");
-			}else{
-				System.out.println("Action error.");
-				return false;
-			}
-		}
-		return true;
-	}*/
-
-	/*private static void loadPlan(String path) {
-		try {
-			path = "plan.txt";
-			BufferedReader in = new BufferedReader(new FileReader(path));
-			String line;
-			//System.out.println("Loading plan...");
-			while (in.ready()) {
-				line = in.readLine();
-				plan.add(line);
-			}
-			in.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}*/
-
-	private static Domain initParsing(String pathDomain, String pathProblem){
+	public static Domain initParsing(String pathDomain, String pathProblem){
 		Parser p = new Parser(pathDomain, pathProblem);
 		Domain domain_completed = p.getDomain();
 		return domain_completed;
 	}
 	
-	/*private static void parseHidden(String path){
+	private static void parseHidden(String path){
 		Scanner scan;
 		try {
 			scan = new Scanner(new File(path));
@@ -254,5 +136,5 @@ public class Planner {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-	}*/	
+	}
 }

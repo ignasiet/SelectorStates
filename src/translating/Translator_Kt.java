@@ -210,11 +210,11 @@ public class Translator_Kt {
 				Action a_translated = new Action();
 				a_translated.IsObservation = false;
 				a_translated.Name = a.Name;
-				/*for(String precondition : a._precond){
+				for(String precondition : a._precond){
 					//Preconditions now are conditions of conditionals effects
 					//TODO: add M-predicates
-					//a_translated._precond.add("K" + precondition);
-				}*/
+					a_translated._precond.add("K" + precondition);
+				}
 				if(a.deductive_action){
 					a_translated.deductive_action = true;
 				}

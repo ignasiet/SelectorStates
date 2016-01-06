@@ -19,6 +19,7 @@ public class Domain {
 	public ArrayList<String> predicates = new ArrayList<String>();
 	public ArrayList<String> predicates_grounded = new ArrayList<String>();
 	public ArrayList<Disjunction> list_disjunctions = new ArrayList<Disjunction>();
+	@SuppressWarnings("rawtypes")
 	public Hashtable<String, ArrayList> constantes = new Hashtable<String, ArrayList>();
 	public Hashtable<String, Action> list_actions = new Hashtable<String, Action>();
 	public Hashtable<String, Integer> state = new Hashtable<String, Integer>();
@@ -44,6 +45,7 @@ public class Domain {
 		action_list.add(a);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void extract(String objects){
 		String[] splited_objects = objects.split(" ");
 		String last_object = "";
@@ -390,6 +392,7 @@ public class Domain {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private void addAxioms(String axiom){
 		ExprList eList = new ExprList();
 		if((eList = ParserHelper.parse(axiom)) != null){

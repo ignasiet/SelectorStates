@@ -61,6 +61,7 @@ public class Printer {
 		}	
 	}
 
+	@SuppressWarnings("unused")
 	private static String printProblem(Domain domain) {
 		String auxStr = "";
 		auxStr = "(define (problem " + domain.ProblemInstance + ")\n";
@@ -139,6 +140,7 @@ public class Printer {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private static String printDomain(Domain domain) {
 		String auxStr = "";
 		auxStr = "(define (domain " + domain.Name + ")\n";

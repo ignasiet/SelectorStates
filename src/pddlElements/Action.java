@@ -71,7 +71,7 @@ public class Action{
 		Effect e = new Effect();
 		while(m.find()) {
 	    	String effect = ParserHelper.cleanString(m.group(1));	    	
-	    	e._Effects.add(effect);
+	    	//e._Effects.add(effect);
 	    	if(effect.startsWith("~")){
 	    		e._Effects.add(effect);
 	    		//_Negative_effects.add(effect);
