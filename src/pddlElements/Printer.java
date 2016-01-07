@@ -24,11 +24,11 @@ public class Printer {
 		long startTime = System.currentTimeMillis();
 		printDomain(path1, domain);
 		long endTime = System.currentTimeMillis();
-		System.out.println("Time printing domain file: " + (endTime - startTime) + " milliseconds");
+		//System.out.println("Time printing domain file: " + (endTime - startTime) + " milliseconds");
 		startTime = System.currentTimeMillis();		
 		printProblem(path2, domain);
 		endTime = System.currentTimeMillis();
-		System.out.println("Time printing problem file: " + (endTime - startTime) + " milliseconds");
+		//System.out.println("Time printing problem file: " + (endTime - startTime) + " milliseconds");
 	}
 	
 	private static void printProblem(String path, Domain domain) {
@@ -121,7 +121,7 @@ public class Printer {
 			}
 			bw.write(")\n");
 			long endTime = System.currentTimeMillis();
-			System.out.println("Time printing predicates in domain file: " + (endTime - startTime) + " milliseconds");
+			//System.out.println("Time printing predicates in domain file: " + (endTime - startTime) + " milliseconds");
 			//System.out.println("Predicates printed");
 			startTime = System.currentTimeMillis();
 			Enumeration<String> e = domain.list_actions.keys();
@@ -132,7 +132,7 @@ public class Printer {
 			//auxStr = auxStr + printActions(domain);
 			bw.write("\n)\n");
 			endTime = System.currentTimeMillis();
-			System.out.println("Time printing actions in domain file: " + (endTime - startTime) + " milliseconds");
+			//System.out.println("Time printing actions in domain file: " + (endTime - startTime) + " milliseconds");
 			bw.close();
 			
 		} catch (IOException e) {

@@ -3,10 +3,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import parser.Parser;
 import parser.ParserHelper;
@@ -17,29 +22,22 @@ import translating.Translator_Kt;
 
 public class Planner {
 	public static Domain domain = new Domain();
-	public static ArrayList<String> plan = new ArrayList<String>();
+	public static Domain domain_translated = new Domain();
+	//public static ArrayList<String> plan = new ArrayList<String>();
 	public static int num_replans = 0;
 	public static int actions_executed = 0;
 	public static int actions_left = 0;
-	private static Hashtable<String, Integer> _actionsApplied = new Hashtable<String, Integer>();
-	private static Hashtable<String, Integer> observations_Hash = new Hashtable<String, Integer>();
+	private static String outputPath = "";
+	//private static Hashtable<String, Integer> _actionsApplied = new Hashtable<String, Integer>();
+	//private static Hashtable<String, Integer> observations_Hash = new Hashtable<String, Integer>();
+	private static ArrayList<String> _Plan = new ArrayList<>();
 	
 	@SuppressWarnings("unused")
 	public static void startPlanner(String domain_file_path, String problem_file_path, String hidden_file, String file_out_path){
-
-		/*String path = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Problemas\\";
-		String path_Plan = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\plan.txt";
-		String path_problem = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\";
-		String path_planner = "C:\\Users\\Ignasi\\Dropbox\\USP\\Replanner\\Planners\\";*/
-		//String path = "/home/ignasi/Dropbox/USP/Replanner/Problemas/";
-		//String path_print = "/home/ignasi/workspace/CLG_cluster/";
-		//String path_Plan = "/home/ignasi/Dropbox/USP/Replanner/Planners/plan.txt";
-		//String path_problem = "/home/ignasi/Dropbox/USP/Replanner/Dominios/";
-		//String path_planner = "/home/ignasi/Dropbox/USP/Replanner/Planners/";
-		
 		/*Define problem*/
 		//String problem = "pW.pddl";
 		//String dom_file_name = "dW.pddl";
+		outputPath = file_out_path;
 		long startTime = System.currentTimeMillis();
 		domain = initParsing(domain_file_path, problem_file_path);
 		//init();
@@ -71,22 +69,20 @@ public class Planner {
 		/*Size measure*/
 		//System.out.println(domain.predicates_grounded.size() + " " + tr.domain_translated.predicates_grounded.size());
 		/*Print domain*/
+		domain_translated = tr.domain_translated;
 		startTime = System.currentTimeMillis();
-		Printer.print(file_out_path + "Kdomain.pddl", file_out_path + "Kproblem.pddl", tr.domain_translated);
+		Printer.print(outputPath + "Kdomain.pddl", outputPath + "Kproblem.pddl", tr.domain_translated);
 		endTime = System.currentTimeMillis();
 		System.out.println("Printing time: " + (endTime - startTime) + " Milliseconds");
-		//domain = tr.domain_translated;
-		/*Start search*/
-		//Searcher aStar = new Searcher();
-		
-		/*Get landmarks*/
-		//Landmarker lm = new Landmarker(tr.domain_translated.state, tr.domain_translated.list_actions, tr.domain_translated.goalState, tr.domain_translated.predicates_invariants);
-		
-		/*Time measure: search*/
-		/*startTime = System.currentTimeMillis();
-		aStar.searchPlan(tr.domain_translated);
-		endTime = System.currentTimeMillis();
-		System.out.println("Time: " + (endTime - startTime) + " Milliseconds");*/	
+	}
+	
+	public static void replan(){
+		//Replanning:
+		//1- clean current plan:
+		_Plan.clear();
+		//2- translate again! (updated initial state)
+		Translator_Kt tr = new Translator_Kt(domain);
+		Printer.print(outputPath + "Kdomain.pddl", outputPath + "Kproblem.pddl", tr.domain_translated);
 	}
 	
 	public static int randInt(int min, int max) {
@@ -97,27 +93,6 @@ public class Planner {
 	    // so add 1 to make it inclusive
 	    int randomNum = rand.nextInt((max - min) + 1) + min;
 	    return randomNum;
-	}
-	
-	private static void createPlan(String path, String problems){
-		//Call planner: must have FF-planner (see config)
-		Process proc;
-		try {
-			String exec_string = path + "ff -o Cdomain.pddl -f Cproblem.pddl";
-			proc = Runtime.getRuntime().exec(exec_string);
-			try {
-			    proc.waitFor();
-			    System.out.println("FF finished");//this will only be seen after +- 10 seconds and process has finished
-
-			} catch (InterruptedException ex) {
-			   ex.printStackTrace(); 
-			}
-			//Then retrieve the process output
-			InputStream in = proc.getInputStream();
-			InputStream err = proc.getErrorStream();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	public static Domain initParsing(String pathDomain, String pathProblem){
@@ -136,5 +111,112 @@ public class Planner {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@SuppressWarnings("unused")
+	public static void callClgPlanner(){
+		// Run a java app in a separate system process
+		//./clg -a 1 -c 1 -v 1 -k 1 -p ./ -o Kdomain.pddl -f Kproblem.pddl | grep '[0-9][0-9]*:\s'
+		try {
+			//String programName = "./clg";
+			String programName = "/home/ignasi/workspace/CLG_cluster/clg";
+			String commandA = "-a";
+			String commandC = "-c";
+			String commandV = "-v";
+			String commandK = "-k";
+			String valueTrue = "1";
+			String valueFalse = "0";
+			String commandPath = "-p";
+			String path = "./";
+			
+			String operatorFile = "-o";
+			String domainPathFile = "Kdomain.pddl";
+			String factFile = "-f";
+			String problemPathFile = "Kproblem.pddl";
+			//Pipe Grep commands: | grep '[0-9][0-9]*:\s'
+			/*String pipe = "|";
+			String grepCommand = "grep";
+			String regexString = "'[0-9][0-9]*:'";*/
+			
+			String[] CMD_ARRAY = { programName, commandA, valueTrue , commandC, 
+					valueTrue, commandV, valueFalse, commandK, valueTrue, 
+					commandPath, path, operatorFile, domainPathFile, factFile, problemPathFile};
+			ProcessBuilder builder = new ProcessBuilder();
+			builder.command(CMD_ARRAY);
+			// Then retrieve the process output
+			builder.redirectOutput(new File("plan.txt"));
+			builder.redirectError(new File("plan.txt"));
+			//System.out.println("" + builder.command());
+			Process p = builder.start();
+			InputStream in = p.getInputStream();
+			InputStream err = p.getErrorStream();
+		    p.waitFor();//here as there is some snipped code that was causing a different
+		                // exception which stopped it from getting processed
+
+		    //missing these was causing the mass amounts of open 'files'
+		    p.getInputStream().close();
+		    p.getOutputStream().close();
+		    p.getErrorStream().close();
+		    //Store the plan:
+			Readplan();
+			
+			//Process proc = Runtime.getRuntime().exec("./clg -a 1 -c 1 -v 1 -k 1 -p ./ -o Kdomain.pddl -f Kproblem.pddl");
+			
+			/*proc.redirectOutput(new File("plan.txt"));
+			*/
+			
+			//TODO: Select a set of possible initial states
+			//dom.generateInitialState();
+			
+			//Translate problem to PDDL
+			//Reader rd = new Reader(dom);
+			//Call planner: must have FF-planner (see config)
+			//Process proc = Runtime.getRuntime().exec("./ff -o Kdomain.pddl -f Kproblem.pddl");
+			// Then retrieve the process output
+			//InputStream in = proc.getInputStream();
+			//InputStream err = proc.getErrorStream();
+			
+			// read the output from the command
+			//BufferedReader bri = new BufferedReader(new InputStreamReader(in));
+			//Plan solution = new Plan();
+			//Executer exec = new Executer(dom);
+		
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static String readFile(String path, Charset encoding) throws IOException{
+		byte[] encoded = Files.readAllBytes(Paths.get(path));
+		return new String(encoded, encoding);
+	}
+
+	private static void Readplan() {
+		try {
+			String content1 = readFile("plan.txt", Charset.defaultCharset());
+			//System.out.println("Actions in plan:");
+			//^(http|https|ftp)://.*$
+			Matcher m = Pattern.compile("(?m)^([0-9][0-9]*):(.*)$").matcher(content1);			
+		    while(m.find()) {
+		    	String aux = m.group(2).trim();
+		    	getPlan().add(aux);
+		    	//System.out.println(aux);
+		    }
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static ArrayList<String> getPlan() {
+		return _Plan;
+	}
+
+	public static void setPlan(ArrayList<String> _Plan) {
+		Planner._Plan = _Plan;
 	}
 }

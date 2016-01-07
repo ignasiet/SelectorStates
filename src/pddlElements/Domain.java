@@ -431,45 +431,6 @@ public class Domain {
 		counter++;
 	}
 	
-	/*private void addGreaterClauseAxiom(ExprList eList) {
-		for(Expr ex : eList){
-			if(!ex.toString().equals("or")){
-				String pred = ParserHelper.cleanString(ParserHelper.cleanSpaces(ex.toString()));
-				Axiom a = new Axiom();
-				a._Name = counter + "-" + pred;
-				a._Body.add(pred);
-				for(Expr ex2 : eList){					
-					if((!ex2.equals(ex)) && (!ex2.toString().equals("or"))){
-						String pred2 = ParserHelper.cleanString(ParserHelper.cleanSpaces(ex2.toString()));
-						a._Head.add(ParserHelper.complement(pred2));
-					}
-				}
-				_Axioms.add(a);
-				counter++;
-			}
-		}
-	}*/
-
-	/*private void addDeductiveOneOfAction(Disjunction uncertainty) {
-		for(String pred : uncertainty.getIterator()){
-			Action a = new Action();
-			a.Name = "OneOf-" + pred;
-			Effect eff_neg = new Effect();
-			eff_neg._Effects.add("~" + pred);
-			
-			//a._Negative_effects.add(pred);
-			for(String otherPred : uncertainty.getIterator()){
-				if(!otherPred.equals(pred)){
-					eff_neg._Condition.add(otherPred);
-					//a._precond.add(otherPred);
-				}
-			}
-			a._Effects.add(eff_neg);
-			a.deductive_action = true;
-			list_actions.put(a.Name, a);
-		}
-	}*/
-	
 	public void addHiddenState(String initial_state){
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(initial_state);
 	    while(m.find()) {
@@ -478,28 +439,6 @@ public class Domain {
 	    }
 	}
 
-	public boolean applyAction(String action_name){
-		if(!list_actions.containsKey(action_name.toLowerCase())){
-			System.out.println("Action " + action_name + " not found. Possibly deductive action.");
-			return true;
-		}else{
-			Action a = list_actions.get(action_name.toLowerCase());
-			if(!a.deductive_action){
-				System.out.println("Executing: " + action_name);
-			}else{
-				System.out.println("Deducting: " + action_name);
-			}
-			if(isActionApplicable(a) && isActionReallyApplicable(a)){
-				applyEffects(a);
-				return true;
-			}
-			else{
-				getInfosBeforeReplanning(a);
-				return false;
-			}
-		}		
-	}
-	
 	public String sensingAction(String action_name){
 		String observation = "";
 		Action a = list_actions.get(action_name.toLowerCase());
@@ -521,89 +460,4 @@ public class Domain {
 		}		
 		return observation;
 	}
-	
-	private void getInfosBeforeReplanning(Action a) {
-		for(String precond : a._precond){
-			if(!hidden_state.containsKey(precond)){
-				state.remove(precond);
-			}
-		}	
-	}
-
-	private void applyEffects(Action a) {
-		for(Effect effect : a._Effects){
-			if(effect._Condition.isEmpty()){
-				for(String e : effect._Effects){
-					state.put(e, 1);
-					hidden_state.put(e, 1);
-				}
-			}else{
-				if(isEffectApplicable(effect)){
-					for(String e : effect._Effects){
-						state.put(e, 1);
-						hidden_state.put(e, 1);
-					}
-				}
-			}
-		}
-	}
-	
-	private boolean isEffectApplicable(Effect effect) {
-		for(String condition : effect._Condition){
-			if(condition.startsWith("~")){
-				if(state.containsKey(condition.substring(1))){
-					return false;
-				}
-			}
-			else{
-				if(!state.containsKey(condition)){
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	/**Verify if the action is applicable*/
-	private boolean isActionApplicable(Action a){
-		for(String precondition : a._precond){
-			if(precondition.startsWith("~")){
-				if(state.containsKey(precondition.substring(1))){
-					System.out.println("Action not applicable: " + a.Name);
-					//System.out.println("Precondition negated" + precondition + " not found.");
-					//System.out.println("Found negated " + precondition.substring(1) + " precondition.");
-					return false;
-				}
-			}
-			else{
-				if(!state.containsKey(precondition)){
-					//System.out.println("Action not applicable: " + a.Name);
-					//System.out.println("Precondition " + precondition + " not found.");
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-	
-	/**Verify in the hidden world if the action is applicable*/
-	private boolean isActionReallyApplicable(Action a){
-		for(String precondition : a._precond){
-			if(precondition.startsWith("~")){
-				if(hidden_state.containsKey(precondition.substring(1))){
-					return false;
-				}
-			}
-			else{
-				if(!hidden_state.containsKey(precondition)){
-					//System.out.println("Action not applicable: " + a.Name);
-					//System.out.println("Precondition " + precondition + " not found.");
-					return false;
-				}
-			}			
-		}
-		return true;
-	}
-
-	
 }
