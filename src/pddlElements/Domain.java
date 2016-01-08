@@ -405,13 +405,6 @@ public class Domain {
 				if(!ex.toString().equals("or")){
 					String pred = ParserHelper.cleanString(ParserHelper.cleanSpaces(ex.toString()));
 					clause.add(pred);
-					/*if(isFirst){						
-						a_1._Name = counter + "-" + pred;
-						a_1._Body.add(ParserHelper.complement(pred));
-						isFirst = false;
-					}else{
-						a_1._Head.add(pred);
-					}*/
 				}
 			}
 			for(String elem : clause){

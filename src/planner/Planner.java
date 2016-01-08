@@ -31,6 +31,7 @@ public class Planner {
 	//private static Hashtable<String, Integer> _actionsApplied = new Hashtable<String, Integer>();
 	//private static Hashtable<String, Integer> observations_Hash = new Hashtable<String, Integer>();
 	private static ArrayList<String> _Plan = new ArrayList<>();
+	private static Hashtable<String, String> _ObservationSelected = new Hashtable<String, String>();
 	
 	@SuppressWarnings("unused")
 	public static void startPlanner(String domain_file_path, String problem_file_path, String hidden_file, String file_out_path){
@@ -159,27 +160,6 @@ public class Planner {
 		    p.getErrorStream().close();
 		    //Store the plan:
 			Readplan();
-			
-			//Process proc = Runtime.getRuntime().exec("./clg -a 1 -c 1 -v 1 -k 1 -p ./ -o Kdomain.pddl -f Kproblem.pddl");
-			
-			/*proc.redirectOutput(new File("plan.txt"));
-			*/
-			
-			//TODO: Select a set of possible initial states
-			//dom.generateInitialState();
-			
-			//Translate problem to PDDL
-			//Reader rd = new Reader(dom);
-			//Call planner: must have FF-planner (see config)
-			//Process proc = Runtime.getRuntime().exec("./ff -o Kdomain.pddl -f Kproblem.pddl");
-			// Then retrieve the process output
-			//InputStream in = proc.getInputStream();
-			//InputStream err = proc.getErrorStream();
-			
-			// read the output from the command
-			//BufferedReader bri = new BufferedReader(new InputStreamReader(in));
-			//Plan solution = new Plan();
-			//Executer exec = new Executer(dom);
 		
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -204,6 +184,19 @@ public class Planner {
 		    	getPlan().add(aux);
 		    	//System.out.println(aux);
 		    }
+		    //Read observations selected:
+		    //Observation selected after action
+		    Matcher obs = Pattern.compile("Observation selected after action (.*):\\n.*\\.\\.\\sK((N_)?.*)\\(\\)").matcher(content1);			
+		    while(obs.find()) {
+		    	String act = obs.group(1).trim();
+		    	String selected = obs.group(2).trim();
+		    	//System.out.println("Action: " + act + " observed: " + selected);
+		    	if(selected.startsWith("N_")){
+		    		getObservationSelected().put(act.toLowerCase(), "~" + selected.substring(2).toLowerCase());
+		    	}else{
+		    		getObservationSelected().put(act.toLowerCase(), selected.toLowerCase());
+		    	}
+		    }
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -218,5 +211,13 @@ public class Planner {
 
 	public static void setPlan(ArrayList<String> _Plan) {
 		Planner._Plan = _Plan;
+	}
+
+	public static Hashtable<String, String> getObservationSelected() {
+		return _ObservationSelected;
+	}
+
+	public static void setObservationSelected(Hashtable<String, String> _ObservationSelected) {
+		Planner._ObservationSelected = _ObservationSelected;
 	}
 }

@@ -57,8 +57,9 @@ public class Main {
 				String outputfile = cmd.getOptionValue("o");
 				String hiddenfile = cmd.getOptionValue("r");
 				Planner.startPlanner(domainfile, problemfile, hiddenfile, outputfile);
-				Planner.callClgPlanner();
+				Planner.callClgPlanner();				
 				Wumpus wumpusInstance = new Wumpus(Planner.domain);
+				wumpusInstance.predictedObservations(Planner.getObservationSelected());
 				//Execute while it can and replan if not:
 				while(wumpusInstance.simulate(Planner.domain, Planner.getPlan()) < 0){
 					Planner.replan();

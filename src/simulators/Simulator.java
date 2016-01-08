@@ -23,7 +23,7 @@ public abstract class Simulator {
 	protected ArrayList<String> _actionsApplied = new ArrayList<String>();
 	//private static Hashtable<String, Integer> observations_Hash = new Hashtable<String, Integer>();
 	protected Hashtable<String, ArrayList<String>> cellsObservations = new Hashtable<String, ArrayList<String>>();
-	
+	protected Hashtable<String, String> _PredictedObservations;
 	
 	public int simulate(Domain dom, ArrayList<String> plan){
 		boolean success = false;
@@ -63,6 +63,9 @@ public abstract class Simulator {
 					senseWorld();
 					closureAction();
 					plotMap();
+				}else{
+					String obsPredicted = _PredictedObservations.get(Action.toLowerCase());
+					return checkObservations(obsPredicted);
 				}
 				return 1;
 			}else{
@@ -74,7 +77,9 @@ public abstract class Simulator {
 		return 1;
 	}
 	
+	abstract int checkObservations(String obsPredicted);
 	abstract void senseWorld();
+	abstract void predictedObservations(Hashtable<String, String> obs);
 	abstract void closureAction();
 	abstract void plotMap();
 	
@@ -100,8 +105,8 @@ public abstract class Simulator {
 	private void applyEffect(Effect e) {
 		for(String effect : e._Effects){
 			if(effect.startsWith("~")){
-				_Domain.hidden_state.put(effect.substring(1), 0);
-				_Domain.state.put(effect.substring(1), 0);
+				_Domain.hidden_state.remove(effect.substring(1));
+				_Domain.state.remove(effect.substring(1));
 				//System.out.println("Removing: " + effect);
 			}else{
 				_Domain.hidden_state.put(effect, 1);
