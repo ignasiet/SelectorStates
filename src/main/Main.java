@@ -1,15 +1,4 @@
 package main;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -18,7 +7,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import planner.Planner;
-import simulators.Simulator;
 import simulators.Wumpus;
 
 
@@ -58,13 +46,17 @@ public class Main {
 				String hiddenfile = cmd.getOptionValue("r");
 				Planner.startPlanner(domainfile, problemfile, hiddenfile, outputfile);
 				Planner.callClgPlanner();				
-				Wumpus wumpusInstance = new Wumpus(Planner.domain);
+				//Wumpus wumpusInstance = new Wumpus(Planner.domain);
+				Wumpus wumpusInstance = new Wumpus(Planner.domain_translated);
 				wumpusInstance.predictedObservations(Planner.getObservationSelected());
 				//Execute while it can and replan if not:
-				while(wumpusInstance.simulate(Planner.domain, Planner.getPlan()) < 0){
+				int numReplan = 0;
+				while(wumpusInstance.simulate(Planner.domain_translated, Planner.getPlan()) < 0){
 					Planner.replan();
+					numReplan++;
 					Planner.callClgPlanner();
 				}
+				System.out.println("Number of replans: " + numReplan);
 			}
 	    }catch (ParseException e) {
 	    	// oops, something went wrong

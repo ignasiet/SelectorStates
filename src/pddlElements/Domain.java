@@ -28,6 +28,7 @@ public class Domain {
 	public Hashtable<String, Integer> predicates_invariants = new Hashtable<String, Integer>();
 	public Hashtable<String, Integer> predicates_invariants_grounded = new Hashtable<String, Integer>();
 	public ArrayList<String> goalState = new ArrayList<String>();
+	public Action disjunctionAction = new Action();
 	public String ProblemInstance;
 	private Integer counter = 0;
 	public ArrayList<Axiom> _Axioms = new ArrayList<Axiom>();

@@ -114,9 +114,11 @@ public class Translator_Kt {
 		int i = 1;
 		for(Axiom ax : domain_to_translate._Axioms){
 			Action a = new Action();
+			Axiom kAx = new Axiom();
 			for(String prec : ax._Body){
 				//Normal axiom action
 				a._precond.add("K" + prec);
+				kAx._Body.add("K" + prec);
 				addPredicate("K" + prec);
 				if(prec.startsWith("~")){
 					a.Name = i + "_deductive_not_" + prec.substring(1);
@@ -127,9 +129,11 @@ public class Translator_Kt {
 			for(String h : ax._Head){
 				//Normal axiom action
 				a._Effects.add(newEffect("K" + h));
+				kAx._Head.add("K" + h);
 				addPredicate("K" + h);
 			}
 			domain_translated.list_actions.put(a.Name, a);
+			domain_translated._Axioms.add(kAx);
 			i++;
 		}
 	}
@@ -143,7 +147,7 @@ public class Translator_Kt {
 	private void addDeductiveActions(Domain domain_to_translate) {
 		Action a = new Action();
 		a.Name = "Closure-merge-K";
-		for(Disjunction disj: domain_to_translate.list_disjunctions){
+		for(Disjunction disj: domain_to_translate.list_disjunctions){			
 			for(String predicate : disj.getIterator()){
 				Effect kEffect = new Effect();
 				Effect kInvertedEffect = new Effect();
@@ -163,6 +167,7 @@ public class Translator_Kt {
 			}
 		}
 		a.deductive_action = true;
+		domain_translated.disjunctionAction = a;
 		domain_translated.list_actions.put(a.Name, a);
 	}
 
@@ -259,6 +264,12 @@ public class Translator_Kt {
 		}
 		for(String effect : eff._Effects){
 			supportRule._Effects.add("K" + effect);
+			//TODO: eliminate effects starting with ~:
+			if(effect.startsWith("~")){
+				supportRule._Effects.add("~K" + effect.substring(1));
+			}else{
+				supportRule._Effects.add("~K~" + effect);
+			}
 			addPredicate("K" + effect);
 			cancelRule._Effects.add("~K" + ParserHelper.complement(effect));
 			addPredicate("K" + ParserHelper.complement(effect));

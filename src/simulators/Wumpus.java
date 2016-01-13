@@ -8,14 +8,15 @@ import java.util.regex.Pattern;
 
 import pddlElements.Action;
 import pddlElements.Axiom;
+import pddlElements.Disjunction;
 import pddlElements.Domain;
 import pddlElements.Effect;
 
 public class Wumpus extends Simulator{
 	private int size = 0;
 	private String[][] map;
-	private String xPosition ="";
-	private String yPosition ="";
+	//private String xPosition ="";
+	//private String yPosition ="";
 	
 	public Wumpus(Domain dom){
 		_Domain = dom;
@@ -25,17 +26,17 @@ public class Wumpus extends Simulator{
 		while(e.hasMoreElements()){
 			String keyPosition = e.nextElement().toString();
 			//Wumpus only next line!
-			if(!keyPosition.startsWith("adj")){
+			if(!keyPosition.contains("adj")){
 				int positionIndex = keyPosition.lastIndexOf("p");
 				if(positionIndex>0){
 					String auxPosition = keyPosition.substring(positionIndex);
 					if(cellsObservations.containsKey(auxPosition)){
 						ArrayList<String> auxList = cellsObservations.get(auxPosition);
-						auxList.add(keyPosition);
+						auxList.add("K"+keyPosition);
 						cellsObservations.put(auxPosition, auxList);
 					}else{
 						ArrayList<String> auxList = new ArrayList<String>();
-						auxList.add(keyPosition);
+						auxList.add("K"+keyPosition);
 						cellsObservations.put(auxPosition, auxList);
 					}
 				}
@@ -50,7 +51,7 @@ public class Wumpus extends Simulator{
 		if(a != null){
 			for(Effect effects : a._Effects){
 				for(String e : effects._Effects){
-					if(e.startsWith("at_")){
+					if(e.startsWith("Kat_")){
 						int positionIndex = e.lastIndexOf("p");
 						position = e.substring(positionIndex);
 					}
@@ -63,7 +64,13 @@ public class Wumpus extends Simulator{
 	}
 	
 	protected void plotMap(){
-		//System.out.print("\n\n\n\n\n\n\n\n\n\n");
+		//System.out.print("\b\b\b\b\b");
+		System.out.println("\f");
+		/*try {
+			Runtime.getRuntime().exec("clear");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}*/
 		for(int i=0;i<size;i++){
 			for(int j=0;j<size;j++){
 				System.out.print(map[i][j] + "\t");
@@ -93,11 +100,14 @@ public class Wumpus extends Simulator{
 	    while(m.find()) {
 	    	int xPos = Integer.parseInt(m.group(1).trim())-1;
 	    	int yPos = Integer.parseInt(m.group(2).trim())-1;
-	    	if(event.startsWith("stench")){
+	    	if(event.startsWith("Kstench")){
 	    		map[xPos][yPos]="~";
 	    	}
-	    	if(event.startsWith("wumpus")){
+	    	if(event.startsWith("Kwumpus")){
 	    		map[xPos][yPos]="W";
+	    	}
+	    	if(event.startsWith("Kbreeze")){
+	    		map[xPos][yPos]="S";
 	    	}
 	    }
 	}
@@ -129,39 +139,40 @@ public class Wumpus extends Simulator{
 	
 	protected void closureAction() {
 		checkAxioms();
+		checkInitialDisjunctions();
 	}
 	
 	private void checkAxioms(){
 		for(Axiom axiom : _Domain._Axioms){
 			if(testPreconditionsAxiom(axiom._Body)){
 				for(String pred : axiom._Head){
-					//System.out.println("Deducted: " + pred);
-					//_Domain.state.put(pred, 1);
-					if(pred.startsWith("~")){
-						if(_Domain.state.containsKey(pred.substring(1))){
-							_Domain.state.remove(pred.substring(1));
-							updateEvents(pred.substring(pred.lastIndexOf("p")), pred);
-							System.out.println("Deducting: " + pred);
-						}
-					}else{
-						if(!_Domain.state.containsKey(pred)){
-							_Domain.state.put(pred, 1);
-							updateEvents(pred.substring(pred.lastIndexOf("p")), pred);
-							System.out.println("Deducting: " + pred);
-						}
-					}
+					if(!_Domain.state.containsKey(pred)){
+						_Domain.state.put(pred, 1);
+						updateEvents(pred.substring(pred.lastIndexOf("p")), pred);
+						System.out.println("Deducting: " + pred);
+					}					
+				}
+				
+			}
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private void checkInitialDisjunctions(){
+		//TODO: check oneof exclusions!
+		for(Effect eff :_Domain.disjunctionAction._Effects){
+			if(checkConditionalEffect(eff)){
+				//System.out.println("Deducting: if " + eff._Condition.toString() + " is true, then " + eff._Effects.toString());
+				for(String effect : eff._Effects){
+					_Domain.state.put(effect, 1);
 				}
 			}
 		}
 	}
 	
-	private void checkInitialDisjunctions(){
-		//TODO: check oneof exclusions!
-	}
-	
 	private boolean testPreconditionsAxiom(ArrayList<String> cond){
 		for(String condition : cond){
-			if(condition.startsWith("~") || !_Domain.state.containsKey(condition)){
+			if(!_Domain.state.containsKey(condition)){
 				return false;
 			}
 			/*else{
@@ -179,12 +190,35 @@ public class Wumpus extends Simulator{
 
 	
 	protected int checkObservations(String observation) {
-		if(checkPredicateState(_Domain.state, observation)){
-			//System.out.println("Observation predicted: " + observation);
-			return 1;
-		}else{
-			System.out.println("Error in plan, observation prediction was: " + observation + " failed! Replaning!");
-			return 0;
+		String planedObservation = observation;
+		if(observation.startsWith("k")){
+			//TODO: change to lower case in translation?
+			observation = observation.replace("k", "K");
+			observation = observation.replace("n_", "~");
 		}
+		int error = 0;
+		if(observation.startsWith("K~")){
+			if(_Domain.state.containsKey(observation.replace("~", ""))){
+				System.out.println("Error in plan, observation predicted was: " + planedObservation + " and turned to be "+ observation + " failed! Replaning!");
+				error = 1;
+			}
+		}else{
+			if(!_Domain.state.containsKey(observation)){
+				observation = observation.replace("K", "K~");
+				System.out.println("Error in plan, observation predicted was: " + planedObservation + " and turned to be "+ observation + " failed! Replaning!");
+				_Domain.hidden_state.put(observation, 1);
+				_Domain.state.put(observation, 1);
+				error = 1;
+			}
+		}
+		if(error > 0){
+			closureAction();
+			return 0;
+		}else{
+			_Domain.hidden_state.put(observation, 1);
+			_Domain.state.put(observation, 1);
+			closureAction();
+		}
+		return 1;
 	}
 }

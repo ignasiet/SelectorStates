@@ -33,7 +33,6 @@ public class Planner {
 	private static ArrayList<String> _Plan = new ArrayList<>();
 	private static Hashtable<String, String> _ObservationSelected = new Hashtable<String, String>();
 	
-	@SuppressWarnings("unused")
 	public static void startPlanner(String domain_file_path, String problem_file_path, String hidden_file, String file_out_path){
 		/*Define problem*/
 		//String problem = "pW.pddl";
@@ -70,6 +69,7 @@ public class Planner {
 		/*Size measure*/
 		//System.out.println(domain.predicates_grounded.size() + " " + tr.domain_translated.predicates_grounded.size());
 		/*Print domain*/
+		tr.domain_translated.hidden_state = domain.hidden_state;
 		domain_translated = tr.domain_translated;
 		startTime = System.currentTimeMillis();
 		Printer.print(outputPath + "Kdomain.pddl", outputPath + "Kproblem.pddl", tr.domain_translated);
@@ -82,8 +82,8 @@ public class Planner {
 		//1- clean current plan:
 		_Plan.clear();
 		//2- translate again! (updated initial state)
-		Translator_Kt tr = new Translator_Kt(domain);
-		Printer.print(outputPath + "Kdomain.pddl", outputPath + "Kproblem.pddl", tr.domain_translated);
+		//Translator_Kt tr = new Translator_Kt(domain);
+		Printer.print(outputPath + "Kdomain.pddl", outputPath + "Kproblem.pddl", domain_translated);
 	}
 	
 	public static int randInt(int min, int max) {
@@ -186,21 +186,22 @@ public class Planner {
 		    }
 		    //Read observations selected:
 		    //Observation selected after action
-		    Matcher obs = Pattern.compile("Observation selected after action (.*):\\n.*\\.\\.\\sK((N_)?.*)\\(\\)").matcher(content1);			
+		    Matcher obs = Pattern.compile("Observation selected after action (.*):\\n.*\\.\\.\\s(K((N_)?.*))\\(\\)").matcher(content1);			
 		    while(obs.find()) {
 		    	String act = obs.group(1).trim();
 		    	String selected = obs.group(2).trim();
 		    	//System.out.println("Action: " + act + " observed: " + selected);
-		    	if(selected.startsWith("N_")){
+		    	//TODO: using K-predicates beware of regex!
+		    	/*if(selected.startsWith("N_")){
 		    		getObservationSelected().put(act.toLowerCase(), "~" + selected.substring(2).toLowerCase());
 		    	}else{
 		    		getObservationSelected().put(act.toLowerCase(), selected.toLowerCase());
-		    	}
+		    	}*/
+		    	getObservationSelected().put(act.toLowerCase(), selected.toLowerCase());
 		    }
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

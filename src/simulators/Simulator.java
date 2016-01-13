@@ -3,15 +3,12 @@
  */
 package simulators;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Hashtable;
 
 import pddlElements.Action;
 import pddlElements.Domain;
 import pddlElements.Effect;
-import planner.Planner;
 
 /**
  * @author ignasi
@@ -26,19 +23,16 @@ public abstract class Simulator {
 	protected Hashtable<String, String> _PredictedObservations;
 	
 	public int simulate(Domain dom, ArrayList<String> plan){
-		boolean success = false;
 		_Domain = dom;
 		/*Status:
 		 * 0: executing
 		 * 1: success, exiting
 		 * -1: failure, need to replan
 		*/
-		int status = 0;
 		int size = plan.size();
 		for(int i = 0;i<size;i++){
 			if(execute(plan.get(i))==0){
 				//System.out.println("Plan failed. Need to replan.");
-				status = -1;
 				return -1;
 			}
 			/*try {
@@ -56,22 +50,25 @@ public abstract class Simulator {
 		if(_Domain.list_actions.containsKey(Action.toLowerCase())){
 			System.out.println("Executing: " + Action);
 			Action a = _Domain.list_actions.get(Action.toLowerCase());
-			if(checkPreconditions(a)){				
-				if(!a.IsObservation){
+			if(!a.IsObservation){
+				closureAction();
+				if(checkPreconditions(a)){
 					executeAction(a);
 					_actionsApplied.add(a.Name);
 					senseWorld();
 					closureAction();
 					plotMap();
 				}else{
-					String obsPredicted = _PredictedObservations.get(Action.toLowerCase());
-					return checkObservations(obsPredicted);
+					System.out.println("Action " + a.Name + " cannot be executed.");
+					return 0;
 				}
-				return 1;
-			}else{
-				System.out.println("Action " + a.Name + " cannot be executed.");
-				return 0;
 			}
+			else{				
+				//plotMap();
+				String obsPredicted = _PredictedObservations.get(Action.toLowerCase());
+				return checkObservations(obsPredicted);
+			}
+			return 1;
 		}
 		//System.out.println("Action " + Action + " not found. Possibly deductive translated action");
 		return 1;
@@ -86,8 +83,14 @@ public abstract class Simulator {
 	private boolean checkPreconditions(Action a){
 		for(String precondition : a._precond){
 			//if(!_Domain.hidden_state.containsKey(precondition)){
-			//Since testing Kpredicates, the first letter must be eliminated
-			if(!checkPredicateState(_Domain.hidden_state, precondition)){
+			//Since testing Kpredicates, the first letter must be eliminated:
+			/*if(precondition.startsWith("Kn_")){
+				precondition = "~" + precondition.substring(3);
+			}
+			else{
+				precondition = precondition.substring(1);
+			}*/
+			if(!checkPredicateState(_Domain.state, precondition)){
 				return false;
 			}
 		}
@@ -116,10 +119,10 @@ public abstract class Simulator {
 		}
 	}
 
-	private boolean checkConditionalEffect(Effect e) {
+	protected boolean checkConditionalEffect(Effect e) {
 		for(String condition : e._Condition){
 			//if(!_Domain.hidden_state.containsKey(condition)){
-			if(!checkPredicateState(_Domain.hidden_state, condition)){
+			if(!checkPredicateState(_Domain.state, condition)){
 				return false;
 			}
 		}
