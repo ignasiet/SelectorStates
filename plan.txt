@@ -14,6 +14,78 @@ fact T0_FAIL_K0 tagged as -1
 Skipping All searches!
 Starting K procedure.
 
+          h:                        21            [1]
+          h:                        21  , h_  :   20       
+::::::::::::::::::::::::current action:::MOVE_P3-5_P2-5
+
+          h:                        20            [1]
+          h:                        20  , h_  :   18       
+::::::::::::::::::::::::current action:::MOVE_P2-5_P2-4
+
+          h:                        18            [1]
+          h:                        18  , h_  :   17       
+::::::::::::::::::::::::current action:::FEEL-BREEZE_P2-4
+
+ Observation selected after action FEEL-BREEZE_P2-4:
+	 adding.. KN_BREEZE_P2-4()
+          h:                        19            [1]
+          h:                        19  , h_  :   18       
+::::::::::::::::::::::::current action:::DEDUCTIVE_NOT_BREEZE_P2-4
+
+          h:                        18            [1]
+          h:                        18  , h_  :   17       
+::::::::::::::::::::::::current action:::MOVE_P2-4_P1-4
+
+          h:                        17            [1]
+          h:                        17  , h_  :   16       
+::::::::::::::::::::::::current action:::MOVE_P1-4_P1-3
+
+          h:                        16            [1]
+          h:                        16  , h_  :   15       
+::::::::::::::::::::::::current action:::FEEL-BREEZE_P1-3
+
+ Observation selected after action FEEL-BREEZE_P1-3:
+	 adding.. KN_BREEZE_P1-3()
+          h:                        14            [1]
+          h:                        14  , h_  :   13       
+::::::::::::::::::::::::current action:::MOVE_P1-3_P1-2
+
+          h:                        13            [1]
+          h:                        13  , h_  :   12       
+::::::::::::::::::::::::current action:::MOVE_P1-2_P2-2
+
+          h:                        12            [1]
+          h:                        12  , h_  :   11       
+::::::::::::::::::::::::current action:::MOVE_P2-2_P3-2
+
+          h:                        11            [1]
+          h:                        11  , h_  :   10       
+::::::::::::::::::::::::current action:::MOVE_P3-2_P4-2
+
+          h:                        10            [1]
+          h:                        10  , h_  :    9       
+::::::::::::::::::::::::current action:::MOVE_P4-2_P5-2
+
+          h:                         9            [1]
+          h:                         9  , h_  :    8       
+::::::::::::::::::::::::current action:::MOVE_P5-2_P5-3
+
+          h:                         8            [1]
+          h:                         8  , h_  :    7       
+::::::::::::::::::::::::current action:::SMELL_WUMPUS_P5-3
+
+ Observation selected after action SMELL_WUMPUS_P5-3:
+	 adding.. KSTENCH_P5-3()
+          h:                        14            [1]
+          h:                        14  , h_  :   13       
+::::::::::::::::::::::::current action:::FEEL-BREEZE_P5-3
+
+ Observation selected after action FEEL-BREEZE_P5-3:
+	 adding.. KN_BREEZE_P5-3()
+          h:                        13            [1]
+          h:                        13  , h_  :   12       
+::::::::::::::::::::::::current action:::DEDUCTIVE_NOT_BREEZE_P5-3
+
           h:                        12            [1]
           h:                        12  , h_  :   11       
 ::::::::::::::::::::::::current action:::MOVE_P5-3_P5-2
@@ -66,34 +138,50 @@ Starting K procedure.
 
 Goal reached in a branch 
 root
-0: MOVE_P5-3_P5-2
-1: MOVE_P5-2_P4-2
-2: SMELL_WUMPUS_P4-2
-3: DEDUCTIVE_NOT_STENCH_P4-2
-4: DEDUCTIVE_NOT_PIT-AT_P4-3
-5: DEDUCTIVE_NOT_WUMPUS-AT_P4-3
-6: DEDUCTIVE_WUMPUS-AT_P5-4
-7: MOVE_P4-2_P4-3
-8: MOVE_P4-3_P4-4
-9: MOVE_P4-4_P4-5
-10: MOVE_P4-5_P5-5
-11: GRAB_P5-5
+0: MOVE_P3-5_P2-5
+1: MOVE_P2-5_P2-4
+2: FEEL-BREEZE_P2-4
+3: DEDUCTIVE_NOT_BREEZE_P2-4
+4: MOVE_P2-4_P1-4
+5: MOVE_P1-4_P1-3
+6: FEEL-BREEZE_P1-3
+7: MOVE_P1-3_P1-2
+8: MOVE_P1-2_P2-2
+9: MOVE_P2-2_P3-2
+10: MOVE_P3-2_P4-2
+11: MOVE_P4-2_P5-2
+12: MOVE_P5-2_P5-3
+13: SMELL_WUMPUS_P5-3
+14: FEEL-BREEZE_P5-3
+15: DEDUCTIVE_NOT_BREEZE_P5-3
+16: MOVE_P5-3_P5-2
+17: MOVE_P5-2_P4-2
+18: SMELL_WUMPUS_P4-2
+19: DEDUCTIVE_NOT_STENCH_P4-2
+20: DEDUCTIVE_NOT_PIT-AT_P4-3
+21: DEDUCTIVE_NOT_WUMPUS-AT_P4-3
+22: DEDUCTIVE_WUMPUS-AT_P5-4
+23: MOVE_P4-2_P4-3
+24: MOVE_P4-3_P4-4
+25: MOVE_P4-4_P4-5
+26: MOVE_P4-5_P5-5
+27: GRAB_P5-5
 
 
 ff: found legal plan as follows
 
 Total branches in this plan: 1 
-Longest branch: 12
+Longest branch: 28
 Total spurious branches in this plan: 0
-Total number of printed actions: 12
+Total number of printed actions: 28
 
 
-time spent:    0.02 seconds instantiating 342 easy, 0 hard action templates
-               0.00 seconds reachability analysis, yielding 358 facts and 327 actions
-               0.00 seconds creating final representation with 309 relevant facts
-               0.00 seconds building connectivity graph
-               0.02 seconds computing closures operations
-               0.02 seconds searching, evaluating 36 states, expanding 12 nodes, to a max depth of 1
+time spent:    0.00 seconds instantiating 342 easy, 0 hard action templates
+               0.00 seconds reachability analysis, yielding 365 facts and 334 actions
+               0.00 seconds creating final representation with 326 relevant facts
+               0.02 seconds building connectivity graph
+               0.00 seconds computing closures operations
+               0.02 seconds searching, evaluating 81 states, expanding 29 nodes, to a max depth of 1
                0.04 seconds total time
 
 

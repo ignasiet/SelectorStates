@@ -45,7 +45,7 @@ public class Main {
 				String outputfile = cmd.getOptionValue("o");
 				String hiddenfile = cmd.getOptionValue("r");
 				Planner.startPlanner(domainfile, problemfile, hiddenfile, outputfile);
-				Planner.callClgPlanner();				
+				/*Planner.callClgPlanner();				
 				//Wumpus wumpusInstance = new Wumpus(Planner.domain);
 				Wumpus wumpusInstance = new Wumpus(Planner.domain_translated);
 				wumpusInstance.predictedObservations(Planner.getObservationSelected());
@@ -56,7 +56,7 @@ public class Main {
 					numReplan++;
 					Planner.callClgPlanner();
 				}
-				System.out.println("Number of replans: " + numReplan);
+				System.out.println("Number of replans: " + numReplan);*/
 			}
 	    }catch (ParseException e) {
 	    	// oops, something went wrong

@@ -13,6 +13,8 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import algorithm.Searcher;
+import landmarker.Landmarker;
 import parser.Parser;
 import parser.ParserHelper;
 import pddlElements.Domain;
@@ -57,7 +59,7 @@ public class Planner {
 		
 		//TODO: Print domain, to test for errors: show Thiago
 		// to create a domain generator
-		//Printer.print(path_print + "d-balls.pddl", domain);
+		//Printer.print(path_print + "d-balls.pddl", domain);		
 		
 		/*Time measure: translation*/
 		domain = ParserHelper.cleanProblem(domain);
@@ -66,15 +68,22 @@ public class Planner {
 		endTime = System.currentTimeMillis();
 		System.out.println("Translation time: " + (endTime - startTime) + " Milliseconds");
 		
+		Searcher s = new Searcher();
+		s.lcdp(tr.domain_translated);
+		
+		//LANDMARKS
+		//@SuppressWarnings("unused")
+		//Landmarker l = new Landmarker(tr.domain_translated.state, tr.domain_translated.list_actions, tr.domain_translated.goalState);
+		
 		/*Size measure*/
 		//System.out.println(domain.predicates_grounded.size() + " " + tr.domain_translated.predicates_grounded.size());
 		/*Print domain*/
-		tr.domain_translated.hidden_state = domain.hidden_state;
+		/*tr.domain_translated.hidden_state = domain.hidden_state;
 		domain_translated = tr.domain_translated;
 		startTime = System.currentTimeMillis();
 		Printer.print(outputPath + "Kdomain.pddl", outputPath + "Kproblem.pddl", tr.domain_translated);
 		endTime = System.currentTimeMillis();
-		System.out.println("Printing time: " + (endTime - startTime) + " Milliseconds");
+		System.out.println("Printing time: " + (endTime - startTime) + " Milliseconds");*/
 	}
 	
 	public static void replan(){

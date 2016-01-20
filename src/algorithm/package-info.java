@@ -5,4 +5,4 @@
  * @author ignasi
  *
  */
-package searcher;
+package algorithm;

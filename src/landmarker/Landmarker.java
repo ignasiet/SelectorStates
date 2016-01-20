@@ -18,7 +18,7 @@ public class Landmarker {
 	private ArrayList<String> _Actions_list = new ArrayList<String>();
 	private Hashtable<String, Action> _Actions = new Hashtable<String, Action>();
 	private Hashtable<String, Integer> _State = new Hashtable<String, Integer>();
-	private Hashtable<String, Integer> _Invariants = new Hashtable<String, Integer>();
+	//private Hashtable<String, Integer> _Invariants = new Hashtable<String, Integer>();
 	private Hashtable<String, Integer> _GoalsAchieved = new Hashtable<String, Integer>();
 	private ArrayList<String> _Goal = new ArrayList<String>();
 	protected ArrayList<String> _Plan = new ArrayList<String>();
@@ -26,15 +26,15 @@ public class Landmarker {
 	protected Integer last_layer = 0;
 	protected boolean fail = false;
 
-	public Landmarker(Hashtable<String, Integer> state, Hashtable<String, Action> Actions, ArrayList<String> goal, Hashtable<String, Integer> invariants) {
+	public Landmarker(Hashtable<String, Integer> state, Hashtable<String, Action> Actions, ArrayList<String> goal) {
 		_State = state;
 		_Actions = Actions;
 		_Goal = goal;
-		_Invariants = invariants;
+		//_Invariants = invariants;
 		Integer num_MAX_iter = 0;
 		initActionList();
-		cleanProblem();
-		Enumeration enumerator_states = state.keys();
+		//cleanProblem();
+		Enumeration<String> enumerator_states = state.keys();
 		StepLandmark stepInit = new StepLandmark();
 		stepInit.father = null;
 		stepInit.step = 0;
@@ -45,18 +45,20 @@ public class Landmarker {
 			stepInit.addNode(no);
 		}
 		_Steps.add(stepInit);
-		while(!isGoal(_Steps.get(_Steps.size()-1)) && num_MAX_iter < _Actions.size()){
+		StepLandmark lastStep = _Steps.get(_Steps.size()-1);
+		while(!isGoal(lastStep) && num_MAX_iter < _Actions.size()){
 			//Expandimos o último nó
-			expand(_Steps.get(_Steps.size()-1));
+			expand(lastStep);
 			num_MAX_iter++;
+			lastStep = _Steps.get(_Steps.size()-1);
 		}
 		if(num_MAX_iter == _Actions.size()){
 			System.out.println("FAIL! no plan found");
 			fail = true;
 		}else{			
-			//backtrackPlan();
+			backtrackPlan();
 			//printGoals();
-			extract_landmarks();
+			//extract_landmarks();
 			/*
 			System.out.println("=========================================");
 			System.out.println("Plano parcialmente ordenado (incluindo no-ops): ");
@@ -96,7 +98,7 @@ public class Landmarker {
 			for(String action_name : A){
 				/*Let I be the intersection of the preconditions of all the actions in A*/
 				Action action = _Actions.get(action_name);
-				list_preconditions.add(action._precond);
+				list_preconditions.add(filterList(action));
 			}
 			I = intersect(list_preconditions);
 			/*for each i in I*/
@@ -131,7 +133,7 @@ public class Landmarker {
 			for(String action_name : A){
 				/*Let I be the intersection of the preconditions of all the actions in A*/
 				Action action = _Actions.get(action_name);
-				list_preconditions.add(action._precond);
+				list_preconditions.add(filterList(action));
 			}
 			/*for each i in I*/
 			for(String pred : I){
@@ -170,16 +172,27 @@ public class Landmarker {
 		return new ArrayList<String>();
 	}
 	
-	private boolean isInvariant(String p) {
+	private ArrayList<String> filterList(Action action){
+		ArrayList<String> filteredList = new ArrayList<String>();
+		for(String predicate : action._precond){
+			if(!predicate.startsWith("~")){
+				filteredList.add(predicate);
+			}
+		}
+		return filteredList;
+	}
+	
+	
+	/*private boolean isInvariant(String p) {
 		String[] pSplitted = p.split("_");
 		if(_Invariants.containsKey(pSplitted[0])){
 			return true;
 		}else{
 			return false;
 		}		
-	}
+	}*/
 
-	private ArrayList<String> removeDuplicate(ArrayList<String> U){
+ 	private ArrayList<String> removeDuplicate(ArrayList<String> U){
 		Set<String> notDuplicate = new HashSet<String>(U);
 		U.clear();
 		U.addAll(notDuplicate);
@@ -278,7 +291,7 @@ public class Landmarker {
 		return true;
 	}
 	
-	private void cleanProblem(){
+	/*private void cleanProblem(){
 		//1 - clean goal
 		ArrayList<String> newGoal = new ArrayList<String>();
 		Hashtable<String, Integer> newState = new Hashtable<String, Integer>();
@@ -308,7 +321,7 @@ public class Landmarker {
 			}
 			action._precond = newPrecond;
 		}
-	}
+	}*/
 	
 	private void expand(StepLandmark predicates_list){
 		StepLandmark ActionStep = new StepLandmark();
@@ -329,32 +342,17 @@ public class Landmarker {
 				}
 				ActionStep.addNode(no);
 				for(String precondition : a._precond) {
-					ActionStep.updateParentNode(action_name, predicates_list.getNode(precondition));
-				}
-				/*for(String effect : a._Positive_effects){					
-					//Verify if the node already exists
-					addEffect(PredicateStep, effect, no);
-					if(PredicateStep.Contains(effect)){
-						PredicateStep.updateParentNode(effect, no);
-					}else{
-						NodeLandmark node_effect = new NodeLandmark(effect);
-						if(node_effect.level > PredicateStep.step){
-							node_effect.level = PredicateStep.step;
-							if(!_GoalsAchieved.containsKey(node_effect.predicate)){
-								_GoalsAchieved.put(node_effect.predicate, PredicateStep.step);
-							}
-							PredicateStep.addNode(node_effect);
-							//ActionStep.updateSuccessorNode(action_name, node_effect);
-							PredicateStep.updateParentNode(effect, no);
-						}
+					if(!precondition.startsWith("~")){
+						ActionStep.updateParentNode(action_name, predicates_list.getNode(precondition));
 					}
-				}*/
-				//If is a contains conditional effect: 
-				if(a._IsConditionalEffect){
-					//Verify effects can be applied
-					for(Effect e : a._Effects){
-						if(isEffectApplicable(e, predicates_list)){
-							for(String eff : e._Effects){
+				}
+				//If is a contains conditional effect (verify if its effect list is not empty): 
+				//if(a._IsConditionalEffect){
+				//Verify effects can be applied
+				for(Effect e : a._Effects){
+					if(isEffectApplicable(e, predicates_list)){
+						for(String eff : e._Effects){
+							if(!eff.startsWith("~")){
 								addEffect(PredicateStep, eff, no);
 							}
 						}
@@ -371,6 +369,9 @@ public class Landmarker {
 	
 	private void addEffect(StepLandmark PredicateStep, String effect, NodeLandmark no){
 		//Verify if the node already exists
+		if(effect.startsWith("~")){
+			return;
+		}
 		if(PredicateStep.Contains(effect)){
 			PredicateStep.updateParentNode(effect, no);
 		}else{
@@ -390,6 +391,9 @@ public class Landmarker {
 	/**Verify if the effect is applicable*/
 	private boolean isEffectApplicable(Effect e, StepLandmark s) {
 		for(String cond : e._Condition){
+			if(cond.startsWith("~")){
+				continue;
+			}
 			if(!s.Contains(cond)){
 				return false;
 			}
@@ -450,7 +454,13 @@ public class Landmarker {
 	/**Verify if the action is applicable*/
 	private boolean isActionApplicable(Action a, StepLandmark s){
 		for(String precondition : a._precond){
-			if(isInvariant(precondition)){
+			if(precondition.startsWith("~")){
+				continue;
+			}
+			if(!s.Contains(precondition)){
+				return false;
+			}
+			/*if(isInvariant(precondition)){
 				continue;
 			}
 			if(!precondition.contains("^")){
@@ -469,7 +479,7 @@ public class Landmarker {
 				if(!flag){
 					return false;
 				}
-			}
+			}*/
 		}
 		return true;
 	}
