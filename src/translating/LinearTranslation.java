@@ -15,20 +15,15 @@ import pddlElements.Effect;
  * @author ignasi
  *
  */
-public class Translator_Kt extends Translation{
+public class LinearTranslation extends Translation{
 
 	/**
 	 * 
 	 */
-	protected Hashtable<String,String> _Tags = new Hashtable<String,String>();
-	private ArrayList<String> _TagList = new ArrayList<String>();
-	private String tagString = "-tag";
 	private ArrayList<Disjunction> list_disjunctions;
-	private Hashtable<String,ArrayList<String>> taggedEffects = new Hashtable<String,ArrayList<String>>();
-	//protected ArrayList<String> predicates_opposed;
 	private Domain domain_translated = new Domain();
 	
-	public Translator_Kt(Domain domain_to_translate) {
+	public LinearTranslation(Domain domain_to_translate) {
 		// 0 - Copy domain metadata
 		list_disjunctions = domain_to_translate.list_disjunctions;
 		domain_translated.Name = domain_to_translate.Name;
@@ -42,9 +37,9 @@ public class Translator_Kt extends Translation{
 		// 4 - Translate actions
 		translateActions(domain_to_translate.list_actions);
 		// 5 - Add aditional actions
-		addContingentMergeActions(domain_to_translate);
+		//addContingentMergeActions(domain_to_translate);
 		// 6 - Add tag refutation
-		addTagRefutation(domain_to_translate);
+		//addTagRefutation(domain_to_translate);
 		// 7 - Add deductive actions
 		addDeductiveActions(domain_to_translate);
 		// 8 - Add axioms
@@ -53,53 +48,6 @@ public class Translator_Kt extends Translation{
 		translateInvariants(domain_to_translate);
 		// 10 - Add tag maximal effects: called when actions are translated
 		//addTagMaximalEffects(domain_to_translate);
-	}
-
-	private void addTagMaximalEffects(Action a, Action a_translated) {
-		//1 - Tag maximal:
-		//If this action has any precondition that is affected by uncertainty, 
-		// effects carry the uncertainty with tags -> add effects multiplied by tags
-		for(String precond: a._precond){
-			Disjunction set_tag = needsEffectsTagMaximal(precond);
-			if(set_tag != null){
-				//1- Take preconditions different from tag and add as K operators
-				for(String tag : set_tag.getIterator()){
-					Effect support_e = new Effect();
-					Effect cancel_e = new Effect();
-					for(String precond_not_uncertain : a._precond){
-						if(!precond_not_uncertain.equals(precond)){
-							support_e._Condition.add("K" + precond_not_uncertain);
-							cancel_e._Condition.add("~K" + ParserHelper.complement(precond_not_uncertain));
-						}
-						else{
-							support_e._Condition.add("K" + precond_not_uncertain + _Tags.get(tag));
-							cancel_e._Condition.add("~K" + ParserHelper.complement(precond_not_uncertain) + _Tags.get(tag));
-						}
-						addPredicate("K" + precond_not_uncertain);
-						addPredicate("K" + precond_not_uncertain + _Tags.get(tag));
-						addPredicate("K" + ParserHelper.complement(precond_not_uncertain));
-						addPredicate("K" + ParserHelper.complement(precond_not_uncertain) + _Tags.get(tag));
-					}
-					for(Effect effect : a._Effects){
-						for(String effect_condition : effect._Condition){
-							support_e._Condition.add("K" + effect_condition);
-							cancel_e._Condition.add("~K" + ParserHelper.complement(effect_condition));
-							addPredicate("K" + effect_condition);
-							addPredicate("K" + ParserHelper.complement(effect_condition));
-						}
-						for(String effect_effect : effect._Effects){
-							addTaggedEffect(effect_effect, tag);
-							support_e._Effects.add("K" + effect_effect + _Tags.get(tag));
-							cancel_e._Effects.add("~K" + ParserHelper.complement(effect_effect) + _Tags.get(tag));
-							addPredicate("K" + effect_effect + _Tags.get(tag));
-							addPredicate("K" + ParserHelper.complement(effect_effect) + _Tags.get(tag));
-						}
-					}
-					a_translated._Effects.add(support_e);
-					a_translated._Effects.add(cancel_e);
-				}				
-			}
-		}
 	}
 
 	private void translateInvariants(Domain domain_to_translate) {
@@ -120,17 +68,17 @@ public class Translator_Kt extends Translation{
 				a._precond.add("K" + prec);
 				kAx._Body.add("K" + prec);
 				addPredicate("K" + prec);
-				if(prec.startsWith("~")){
-					a.Name = i + "_deductive_not_" + prec.substring(1);
-				}else{
-					a.Name = i + "_deductive_" + prec;
-				}
 			}
 			for(String h : ax._Head){
 				//Normal axiom action
 				a._Effects.add(newEffect("K" + h));
 				kAx._Head.add("K" + h);
 				addPredicate("K" + h);
+				if(h.startsWith("~")){
+					a.Name = i + "_deduct_not_" + h.substring(1);
+				}else{
+					a.Name = i + "_deduct_" + h;
+				}
 			}
 			domain_translated.list_actions.put(a.Name, a);
 			domain_translated._Axioms.add(kAx);
@@ -145,9 +93,9 @@ public class Translator_Kt extends Translation{
 	}
 
 	private void addDeductiveActions(Domain domain_to_translate) {
-		Action a = new Action();
+		/*Action a = new Action();
 		a.Name = "Closure-merge-K";
-		for(Disjunction disj: domain_to_translate.list_disjunctions){			
+		for(Disjunction disj: domain_to_translate.list_disjunctions){
 			for(String predicate : disj.getIterator()){
 				Effect kEffect = new Effect();
 				Effect kInvertedEffect = new Effect();
@@ -168,10 +116,26 @@ public class Translator_Kt extends Translation{
 		}
 		a.deductive_action = true;
 		domain_translated.disjunctionAction = a;
-		domain_translated.list_actions.put(a.Name, a);
+		domain_translated.list_actions.put(a.Name, a);*/
+		for(Disjunction disj: domain_to_translate.list_disjunctions){
+			for(String predicate : disj.getIterator()){
+				Action a = new Action();
+				a.Name = "Closure-oneof-" + predicate;
+				Effect kEffect = new Effect();
+				kEffect._Effects.add("K" + predicate);
+				for(String p_opposed : disj.getIterator()){
+					if(!p_opposed.equals(predicate)){
+						a._precond.add("K~" + p_opposed);
+					}
+				}
+				a._Effects.add(kEffect);
+				a.deductive_action = true;
+				domain_translated.list_actions.put(a.Name, a);
+			}
+		}
 	}
 
-	private void addTagRefutation(Domain domain_to_translate) {
+	/*private void addTagRefutation(Domain domain_to_translate) {
 		for(String predicate : domain_to_translate.predicates_grounded){
 			if(!domain_to_translate.predicates_invariants_grounded.containsKey(predicate)){
 				for(String tag : _TagList){
@@ -184,9 +148,9 @@ public class Translator_Kt extends Translation{
 				}
 			}
 		}
-	}
+	}*/
 
-	private void addContingentMergeActions(Domain domain_to_translate) {
+	/*private void addContingentMergeActions(Domain domain_to_translate) {
 		Enumeration<String> e = taggedEffects.keys();
 		while(e.hasMoreElements()){
 			String predicate = e.nextElement().toString();
@@ -203,7 +167,7 @@ public class Translator_Kt extends Translation{
 			a._Effects.add(eff);
 			domain_translated.list_actions.put(a.Name, a);
 		}
-	}
+	}*/
 
 	protected void translateActions(Hashtable<String, Action> list_actions) {
 		Enumeration<String> e = list_actions.keys();
@@ -228,9 +192,6 @@ public class Translator_Kt extends Translation{
 				}
 				for(Effect eff : a._Effects){
 					a_translated._Effects.addAll(translateEffects(eff, a._precond));
-				}
-				if(!a.deductive_action){
-					addTagMaximalEffects(a, a_translated);
 				}
 				domain_translated.list_actions.put(a_translated.Name, a_translated);
 			}
@@ -287,7 +248,7 @@ public class Translator_Kt extends Translation{
 		Effect e = new Effect();
 		Branch b = new Branch();
 		for(String precondition : a._precond){
-			//a_translated._precond.add("K" + precondition);
+			a_translated._precond.add("K" + precondition);
 			e._Condition.add("K" + precondition);
 			e._Condition.add("~K" + ParserHelper.complement(precondition));
 		}
@@ -305,14 +266,6 @@ public class Translator_Kt extends Translation{
 				branch1._Branches.add("~K" + ParserHelper.complement(effect_result));
 				branch2._Branches.add("~K" + effect_result);
 				branch2._Branches.add("K" + ParserHelper.complement(effect_result));
-				for(Disjunction disj : list_disjunctions){
-					if(disj.contains(effect_result)){
-						for(String tag : disj.getIterator()){
-							branch1._Branches.add("K" + effect_result + _Tags.get(tag));
-							branch2._Branches.add("K" + ParserHelper.complement(effect_result)+ _Tags.get(tag));
-						}
-					}
-				}
 			}
 			a_translated._Effects.add(e);
 			a_translated._Branches.add(branch1);
@@ -325,23 +278,10 @@ public class Translator_Kt extends Translation{
 		for(String predicate_goal : goalState){
 			domain_translated.goalState.add("K" + predicate_goal);
 			addPredicate("K" + predicate_goal);
-			/*for(String tag : _TagList){
-				addPredicate("K" + predicate_goal + _Tags.get(tag));
-				addPredicate("K~" + predicate_goal + _Tags.get(tag));
-			}*/
 		}
 	}
 
 	protected void translatePredicates(ArrayList<String> predicates_grounded, Hashtable<String, Integer> predicates_invariants_grounded) {
-		Integer number_tag = 1;
-		for(Disjunction disj : list_disjunctions){
-			for(String tag : disj.getIterator()){
-				_TagList.add(tag);
-				_Tags.put(tag, tagString + number_tag);
-				number_tag++;
-				addPredicate("K" + tag + tagString + number_tag);
-			}
-		}		
 		//1- predicates without tags
 		for(String predicate : predicates_grounded){
 			if(!predicates_invariants_grounded.containsKey(predicate)){
@@ -360,7 +300,7 @@ public class Translator_Kt extends Translation{
 		}
 	}
 	
-	private void addTaggedEffect(String effect, String tag){
+	/*private void addTaggedEffect(String effect, String tag){
 		effect = effect.replace("~", "");
 		if(!taggedEffects.containsKey(effect)){
 			ArrayList<String> list_tags = new ArrayList<String>();
@@ -373,7 +313,7 @@ public class Translator_Kt extends Translation{
 			}
 			taggedEffects.put(effect, list_tags);
 		}
-	}
+	}*/
 
 	protected void translateInitialState(Hashtable<String, Integer> state) {
 		Enumeration<String> e = state.keys();
@@ -383,24 +323,10 @@ public class Translator_Kt extends Translation{
 			domain_translated.state.put("K" + key_state, 1);
 			addPredicate("K" + key_state);
 		}
-		//2-Add tag-states
-		for(String tag : _TagList){
-			//2.1 - KL-tag K
-			domain_translated.state.put("K" + tag + _Tags.get(tag), 1);
-			addPredicate("K" + tag + _Tags.get(tag));
-			//2.2 - K not L - tag opposed
-			for(Disjunction disj : list_disjunctions){
-				for(String tag_opposed : disj.getIterator()){
-					if(!tag_opposed.equals(tag)){
-						domain_translated.state.put("K~" + tag + _Tags.get(tag_opposed), 1);
-						addPredicate("K~" + tag + _Tags.get(tag_opposed));
-					}
-				}
-			}
-		}
 	}
 
 	public Domain getDomainTranslated() {
 		return domain_translated;
-	}	
+	}
+	
 }

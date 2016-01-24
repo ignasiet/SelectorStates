@@ -19,6 +19,8 @@ import parser.Parser;
 import parser.ParserHelper;
 import pddlElements.Domain;
 import pddlElements.Printer;
+import translating.LinearTranslation;
+import translating.Translation;
 import translating.Translator_Kt;
 
 
@@ -37,8 +39,6 @@ public class Planner {
 	
 	public static void startPlanner(String domain_file_path, String problem_file_path, String hidden_file, String file_out_path){
 		/*Define problem*/
-		//String problem = "pW.pddl";
-		//String dom_file_name = "dW.pddl";
 		outputPath = file_out_path;
 		long startTime = System.currentTimeMillis();
 		domain = initParsing(domain_file_path, problem_file_path);
@@ -46,10 +46,6 @@ public class Planner {
 		/*Ground conditional effects*/
 		domain.ground_all_actions();
 		parseHidden(hidden_file);
-		/*Select hidden file*/
-		//String hidden = "hidden5Complete7.pddl";
-		//System.out.println("Problem real: " + hidden);
-		//parseHidden(path + hidden);	
 		
 		/*Process entry*/
 		domain.getInvariantPredicates();
@@ -64,12 +60,14 @@ public class Planner {
 		/*Time measure: translation*/
 		domain = ParserHelper.cleanProblem(domain);
 		startTime = System.currentTimeMillis();
-		Translator_Kt tr = new Translator_Kt(domain);
+		//Translator_Kt tr = new Translator_Kt(domain);
+		LinearTranslation tr = new LinearTranslation(domain);
 		endTime = System.currentTimeMillis();
 		System.out.println("Translation time: " + (endTime - startTime) + " Milliseconds");
 		
+		//Non deterministic planner
 		Searcher s = new Searcher();
-		s.lcdp(tr.domain_translated);
+		s.lcdp(tr.getDomainTranslated(), 1.5f);
 		
 		//LANDMARKS
 		//@SuppressWarnings("unused")
@@ -78,14 +76,19 @@ public class Planner {
 		/*Size measure*/
 		//System.out.println(domain.predicates_grounded.size() + " " + tr.domain_translated.predicates_grounded.size());
 		/*Print domain*/
-		/*tr.domain_translated.hidden_state = domain.hidden_state;
-		domain_translated = tr.domain_translated;
-		startTime = System.currentTimeMillis();
-		Printer.print(outputPath + "Kdomain.pddl", outputPath + "Kproblem.pddl", tr.domain_translated);
-		endTime = System.currentTimeMillis();
-		System.out.println("Printing time: " + (endTime - startTime) + " Milliseconds");*/
+		//printDomain(tr);
+		/**/
 	}
 	
+	private static void printDomain(Translation tr) {
+		tr.getDomainTranslated().hidden_state = domain.hidden_state;
+		domain_translated = tr.getDomainTranslated();
+		long startTime = System.currentTimeMillis();
+		Printer.print(outputPath + "Kdomain.pddl", outputPath + "Kproblem.pddl", tr.getDomainTranslated());
+		long endTime = System.currentTimeMillis();
+		System.out.println("Printing time: " + (endTime - startTime) + " Milliseconds");
+	}
+
 	public static void replan(){
 		//Replanning:
 		//1- clean current plan:

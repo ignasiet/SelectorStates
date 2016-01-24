@@ -20,6 +20,7 @@ public class NodeLandmark {
 	private ArrayList<NodeLandmark> successors = new ArrayList<NodeLandmark>();
 	public int level;
 	public String predicate;
+	public boolean solved = false;
 	
 	public NodeLandmark(String pred) {
 		//Constructor
@@ -53,5 +54,9 @@ public class NodeLandmark {
 		else{
 			return false;
 		}
+	}
+	
+	public int hashCode(){ 
+		return predicate.hashCode(); 
 	}
 }
