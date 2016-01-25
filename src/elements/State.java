@@ -6,6 +6,7 @@ package elements;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -27,8 +28,11 @@ public class State {
 	public float fCost;
 	public boolean solved;
 	public ArrayList<Action> applicableActions;
-	public Queue<State> _SuccessorStates;
+	//public Queue<State> _SuccessorStates;
+	public ArrayList<State> _NextStates = new ArrayList<State>();
+	//public ArrayList<State> _ChildStates = new ArrayList<State>();
 	private Action _LastAction;
+	public String _BestAction;
 	private State parent;
 	
 	public State(){
@@ -37,10 +41,10 @@ public class State {
 		pathCost = 0;
 		fCost = 0;
 		solved = false;
-		_SuccessorStates = initFringe();
+		//_SuccessorStates = initFringe();
 	}
 	
-	private Queue<State> initFringe(){
+	/*private Queue<State> initFringe(){
 		//init Priority queue
 		PriorityQueue<State> fringe = new PriorityQueue<State>(nMax, 
 				new Comparator<State>(){
@@ -49,7 +53,7 @@ public class State {
 			}
 		});
 		return fringe;
-	}
+	}*/
 	
 	public boolean contains(String pred){
 		if(_State.contains(pred)){
@@ -57,6 +61,30 @@ public class State {
 		}else{
 			return false;
 		}
+	}
+	
+	public State getUnsolvedChild(){
+		for(State s : _NextStates){
+			//Select states expanded
+			if(s.getParent()._BestAction.equals(s._LastAction.Name)){
+				if(!s.solved){
+					return s;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public boolean testChildSolved(){
+		for(State s : _NextStates){
+			//Select states expanded
+			if(s.getParent()._BestAction.equals(s._LastAction.Name)){
+				if(!s.solved){
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 	
 	public boolean canApply(Action a) {
@@ -126,9 +154,9 @@ public class State {
 		}		
 	}
 	
-	public State pickNextState() {
+	/*public State pickNextState() {
 		return _SuccessorStates.poll();
-	}
+	}*/
 
 	public Action getLastAction() {
 		return _LastAction;

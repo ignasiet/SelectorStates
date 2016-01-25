@@ -41,8 +41,10 @@ public class Searcher {
 		State initialState = getInitialState(domain.state);
 		//matchApplicableActions(initialState);
 		_Fringe = initFringe();
+		State s = initialState;
 		while(!initialState.solved){
-			lcdpTrial(initialState);
+			s = lcdpTrial(s);
+			s = checkSolved(s);
 		}
 	}
 	
@@ -73,66 +75,80 @@ public class Searcher {
 	}
 
 	@SuppressWarnings("unused")
-	private void lcdpTrial(State s){
+	private State lcdpTrial(State s){
 		//HashSet<HashSet<String>> _VisitedNodes = new HashSet<HashSet<String>>();
-		Stack<State> _VisitedNodes = new Stack<State>();
-		while(!s.solved){			
-			_VisitedNodes.push(s);
+		//Stack<State> _VisitedNodes = new Stack<State>();
+		while(!s.solved){
+			//_VisitedNodes.push(s);
 			statesHash.add(s._State);
 			matchApplicableActions(s);
 			if(goalTest(s)){
 				s.solved = true;
 				break;
 			}
-			//TODO: heuristic step here:
+			//Heuristic step here:
 			//Expand!
-			//Action a = GreedyAction(s, _Domain);
-			GreedyAction(s);
+			expandState(s);			
+			s = pickNextBestState();
 			
-			//s = s.pickNextState();
-			s = _Fringe.poll();
 			while(statesHash.contains(s._State)){
-				s = _Fringe.poll();
+				//System.out.println("Repeated state: " + s.getLastAction().Name);
+				s = pickNextBestState();
 			}
-			//System.out.println(s.getLastAction().Name + " FValue: " + s.fCost);
-			//System.out.println();
-			//System.out.println("========================STEP " + s.pathCost + "====================================");
 		}
-		/*while(!_VisitedNodes.isEmpty()){
-			s = _VisitedNodes.pop();
-			s.solved = true;
-			System.out.println("Action: " + s.getLastAction().Name);
-		}*/
-		while(s.getParent() != null){
-			System.out.println("Action: " + s.getLastAction().Name);
-			s = s.getParent();
-			s.solved = true;			
-		}
+		return s;
 	}
 	
-	public void GreedyAction(State s) {
+	private State checkSolved(State s){
+		while(s.getParent() != null){
+			System.out.println("Action: " + s._BestAction);
+			if(s.testChildSolved()){
+				s.solved = true;
+				s.getParent()._BestAction = s.getLastAction().Name;
+				s = s.getParent();
+			}
+			else{
+				System.out.println("Solving another branch!");
+				s = s.getUnsolvedChild();
+				//lcdpTrial(s);
+				cleanFringe();
+				return s;
+			}
+		}
+		return null;
+	}
+	
+	private State pickNextBestState() {
+		//State s_old = s;
+		State s_new = _Fringe.poll();
+		//s_old._BestAction = s_new.getLastAction().Name;
+		State s_old = s_new.getParent();
+		s_old._BestAction = s_new.getLastAction().Name;
+		return s_new;
+	}
+
+	public void expandState(State s) {
 		//Else expand node
 		for(Action action : s.applicableActions){
 			expand(action, s);
 		}
-		//return _Fringe.peek().getLastAction();
 	}
 	
 	private void expand(Action a, State s) {
 		if(a._Branches.isEmpty()){
 			State node_sucessor = applyAction(a, s);
-			node_sucessor.setLastAction(a);
-			//System.out.println(a.Name);
 			addStateHeuristic(node_sucessor, s);
 		}else{
 			for(Branch b : a._Branches){
 				State node_sucessor = s.applyBranch(b);
 				node_sucessor.setLastAction(a);
-				//System.out.println(a.Name);
 				addStateHeuristic(node_sucessor, s);
-				//_SuccessorStates.add(node_sucessor);
 			}
 		}
+	}
+	
+	private void cleanFringe(){
+		_Fringe.clear();
 	}
 	
 	private void addStateHeuristic(State node_sucessor, State s){
@@ -142,6 +158,7 @@ public class Searcher {
 			node_sucessor.pathCost = s.pathCost + 1;
 			node_sucessor.fCost = node_sucessor.heuristicValue + node_sucessor.pathCost;
 			node_sucessor.setParent(s);
+			s._NextStates.add(node_sucessor);
 			//s._SuccessorStates.add(node_sucessor);
 			_Fringe.add(node_sucessor);
 		}
@@ -149,6 +166,7 @@ public class Searcher {
 	
 	public State applyAction(Action a, State s) {
 		State node_sucessor = new State();
+		node_sucessor.setLastAction(a);
 		node_sucessor._State = (HashSet<String>) s._State.clone();
 		//1-Apply conditional effects:
 		for(Effect conditionalEffect : a._Effects){
