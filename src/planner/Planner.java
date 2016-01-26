@@ -67,7 +67,8 @@ public class Planner {
 		
 		//Non deterministic planner
 		Searcher s = new Searcher();
-		s.lcdp(tr.getDomainTranslated(), 1.5f);
+		s.lcdp(tr.getDomainTranslated(), 1f);
+		System.out.println("Planner time: " + s.totalTime + " Milliseconds");
 		
 		//LANDMARKS
 		//@SuppressWarnings("unused")

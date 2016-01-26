@@ -27,6 +27,7 @@ public class State {
 	public int pathCost;
 	public float fCost;
 	public boolean solved;
+	public boolean fail;
 	public ArrayList<Action> applicableActions;
 	//public Queue<State> _SuccessorStates;
 	public ArrayList<State> _NextStates = new ArrayList<State>();
@@ -34,6 +35,7 @@ public class State {
 	private Action _LastAction;
 	public String _BestAction;
 	private State parent;
+	public String _BestHeuristicAction;
 	
 	public State(){
 		_State = new HashSet<String>();
@@ -63,11 +65,20 @@ public class State {
 		}
 	}
 	
+	public State getUnvisitedChilds(){
+		for(State s : _NextStates){
+			if(!s.fail){
+				return s;
+			}
+		}
+		return null;
+	}
+	
 	public State getUnsolvedChild(){
 		for(State s : _NextStates){
 			//Select states expanded
 			if(s.getParent()._BestAction.equals(s._LastAction.Name)){
-				if(!s.solved){
+				if(!s.solved && !s.fail){
 					return s;
 				}
 			}
@@ -76,6 +87,9 @@ public class State {
 	}
 	
 	public boolean testChildSolved(){
+		if(solved){
+			return true;
+		}
 		for(State s : _NextStates){
 			//Select states expanded
 			if(s.getParent()._BestAction.equals(s._LastAction.Name)){

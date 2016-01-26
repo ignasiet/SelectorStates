@@ -22,7 +22,6 @@ public class Graphplan {
 	private HashSet<String> _State = new HashSet<String>();
 	private ArrayList<String> _Goal = new ArrayList<String>();
 	protected ArrayList<String> _Plan = new ArrayList<String>();
-	//protected Hashtable<Integer, ArrayList<String>> _ActionPlan = new Hashtable<Integer, ArrayList<String>>();
 	protected Integer last_layer = 0;
 	protected boolean fail = false;
 	public int heuristicValue = 100000000;
@@ -42,28 +41,6 @@ public class Graphplan {
 		//heuristicValue = heuristicGraphPlan();
 		//System.out.println(_Plan.toString());
 		//System.out.println("Hvalue: " + heuristicValue + " size relaxed plan: " + _Plan.size());
-	}
-	
-	private void extractPlan() {
-		Stack<String> CurrentGoals = new Stack<String>();
-		//Init stack
-		for(String goalPred : _Goal){
-			CurrentGoals.push(goalPred);
-		}
-		boolean initAchieved = CurrentGoals.isEmpty();
-		heuristicValue = 1;
-		while(!initAchieved){
-			String current = CurrentGoals.pop();
-			NodeLandmark currentNode = layerMembershipFacts.getNode(current);
-			for(NodeLandmark actionNode : currentNode.getParent()){
-				heuristicValue++;
-				_Plan.add(actionNode.predicate);
-				for(NodeLandmark precond : actionNode.getParent()){
-					CurrentGoals.push(precond.predicate);
-				}				
-			}
-			initAchieved = CurrentGoals.isEmpty();
-		}
 	}
 	
 	private void extract(){
@@ -209,6 +186,10 @@ public class Graphplan {
 		return true;
 	}
 
+	public ArrayList<String> getPlan(){
+		return _Plan;
+	}
+	
 	/**Verify if a set of conditions are met*/
 	private boolean isApplicable(ArrayList<String> conditions, StepLandmark s, int i){
 		for(String precondition : conditions){
