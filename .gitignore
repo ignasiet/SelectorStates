@@ -17,6 +17,11 @@
 *.war
 *.ear
 
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+
 #PDDL generated files
 *.pddl
 
