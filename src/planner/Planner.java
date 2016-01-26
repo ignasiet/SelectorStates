@@ -13,6 +13,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import algorithm.BDDSearcher;
 import algorithm.Searcher;
 import landmarker.Landmarker;
 import parser.Parser;
@@ -66,9 +67,11 @@ public class Planner {
 		System.out.println("Translation time: " + (endTime - startTime) + " Milliseconds");
 		
 		//Non deterministic planner
-		Searcher s = new Searcher();
-		s.lcdp(tr.getDomainTranslated(), 1f);
-		System.out.println("Planner time: " + s.totalTime + " Milliseconds");
+		//Searcher s = new Searcher();
+		//s.lcdp(tr.getDomainTranslated(), 1f);
+		//System.out.println("Planner time: " + s.totalTime + " Milliseconds");
+		
+		BDDSearcher b = new BDDSearcher(tr.getDomainTranslated());
 		
 		//LANDMARKS
 		//@SuppressWarnings("unused")
